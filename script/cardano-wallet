@@ -1,0 +1,291 @@
+#!/bin/bash
+
+# ====================================================================
+# Main logic of the script
+# ==========================================================
+main() {
+  if [ -z $wallet_id ]; then
+    echoerr "Wallet ID unspecified for operation '$operation'"
+    exit 1
+  fi
+
+  wallet_dir="$NODE_HOME/wallet/$wallet_id"
+
+  case $operation in
+    address)
+      if [ ! -d $wallet_dir ]; then
+        echoerr "Wallet $wallet_id doesn't exist at $wallet_dir"
+        exit 1
+      fi
+
+      wallet_address_file="$wallet_dir/payment.addr"
+      if [ ! -f $wallet_address_file ]; then
+        echoerr "Address file for wallet $wallet_id doesn't exist at $wallet_address_file"
+        exit 1
+      fi
+
+      cat $wallet_address_file
+      ;;
+    signing-key)
+      if [ ! -d $wallet_dir ]; then
+        echoerr "Wallet $wallet_id doesn't exist at $wallet_dir"
+        exit 1
+      fi
+
+      wallet_signing_key_file="$wallet_dir/payment.skey"
+      if [ ! -f $wallet_signing_key_file ]; then
+        echoerr "Signing key file for wallet $wallet_id doesn't exist at $wallet_signing_key_file"
+        exit 1
+      fi
+
+      echo $wallet_signing_key_file
+      ;;
+    verification-key)
+      if [ ! -d $wallet_dir ]; then
+        echoerr "Wallet $wallet_id doesn't exist at $wallet_dir"
+        exit 1
+      fi
+
+      wallet_verification_key_file="$wallet_dir/payment.vkey"
+      if [ ! -f $wallet_verification_key_file ]; then
+        echoerr "Signing key file for wallet $wallet_id doesn't exist at $wallet_verification_key_file"
+        exit 1
+      fi
+
+      echo $wallet_verification_key_file
+      ;;
+    balance)
+      if [ ! -d $wallet_dir ]; then
+        echoerr "Wallet $wallet_id doesn't exist at $wallet_dir"
+        exit 1
+      fi
+
+      wallet_address_file="$wallet_dir/payment.addr"
+      if [ ! -f $wallet_address_file ]; then
+        echoerr "Address file for wallet $wallet_id doesn't exist at $wallet_address_file"
+        exit 1
+      fi
+
+      
+      wallet_address=$(cat $wallet_address_file)
+
+      cardano-cli query utxo --address $wallet_address --testnet-magic 5 --out-file /dev/stdout
+      ;;
+    create)
+      if [ -d $wallet_dir ]; then
+        echoerr "Cannot create wallet $wallet_id, because it already exists at $wallet_dir"
+        exit 1
+      fi
+
+      echo "Creating wallet $wallet_id at $wallet_dir"
+      mkdir -p $wallet_dir
+      cd $wallet_dir
+
+      # Create payment key pair
+      cardano-cli address key-gen \
+        --verification-key-file payment.vkey \
+        --signing-key-file payment.skey
+
+      # Create staking key pair
+      cardano-cli stake-address key-gen \
+        --verification-key-file stake.vkey \
+        --signing-key-file stake.skey
+
+      # Create staking address
+      cardano-cli stake-address build \
+        --stake-verification-key-file stake.vkey \
+        --out-file stake.addr \
+        --testnet-magic 5
+
+      # Create payment address
+      cardano-cli address build \
+        --payment-verification-key-file payment.vkey \
+        --stake-verification-key-file stake.vkey \
+        --out-file payment.addr \
+        --testnet-magic 5
+      ;;
+   remove)
+      if [ ! -d $wallet_dir ]; then
+        echoerr "Wallet $wallet_id doesn't exist at $wallet_dir"
+        exit 0
+      fi
+
+      if $yes; then
+        confirmation='y'
+      else
+        read -p "Are you sure you want to remove wallet $wallet_id at $wallet_dir (y/n)? " -n 1 -r confirmation
+        echo ""
+      fi
+
+      if [[ $confirmation =~ ^[Yy]$ ]]; then
+        echo "Removing wallet $wallet_id"
+        rm -rf $wallet_dir
+      fi
+      ;;
+    *)
+      echoerr "Programming error: operation '$operation' not implemented."
+      exit 9
+  esac
+}
+
+# ====================================================================
+# Parse command-line arguments and the evaluate main()
+# ==========================================================
+
+# Specify short and long options
+OPTIONS=hqvy
+LONGOPTS=help,quiet,verbose,yes
+
+handle_args() {
+  # Set defaults for variables
+  quiet=false
+  verbose=false
+  yes=false
+
+  # Handle option args
+  while true; do
+      case "$1" in
+          -h|--help)
+              show_help
+              exit 0
+              ;;
+          -v|--verbose)
+              verbose=true
+              shift
+              ;;
+          -q|--quiet)
+              quiet=true
+              shift
+              ;;
+          -y|--yes)
+              yes=true
+              shift
+              ;;
+          --)
+              shift
+              break
+              ;;
+          *)
+              echoerr "Unknown options provided: $@"
+              exit 51
+              ;;
+      esac
+  done
+
+  # Verbose overrides quiet
+  if $verbose; then
+    quiet=false
+  fi
+
+  # Turn off echo if quiet option enabled
+  if $quiet; then
+    exec 1>/dev/null # redirect stdout to /dev/null
+  fi
+
+  if [[ "$#" -eq 0 ]]; then
+    show_help
+    exit 0
+  fi
+
+  # Handle positional args
+  case "$1" in
+    address)
+      operation="$1"
+      shift
+      wallet_id="$1"
+      shift
+      ;;
+    balance)
+      operation="$1"
+      shift
+      wallet_id="$1"
+      shift
+      ;;
+    signing-key)
+      operation="$1"
+      shift
+      wallet_id="$1"
+      shift
+      ;;
+    verification-key)
+      operation="$1"
+      shift
+      wallet_id="$1"
+      shift
+      ;;
+    create)
+      operation="$1"
+      shift
+      wallet_id="$1"
+      shift
+      ;;
+    remove)
+      operation="$1"
+      shift
+      wallet_id="$1"
+      shift
+      ;;
+    *)
+      # If no operation provided, then default to 'address'
+      if [[ "$#" -eq 1 ]]; then
+        operation="address"
+        wallet_id="$1"
+        shift
+      else
+        echoerr "Unknown operation: $@"
+        exit 52
+      fi
+      ;;
+  esac
+
+  if [[ "$#" > 0 ]]; then
+    echoerr "Unknown arguments provided for operation '$operation': '$@'"
+    exit 53
+  fi
+}
+
+show_help() {
+  # Help message
+  echo "$(basename "$0") - example bash script that parses options and parameters from"
+  echo "command-line arguments"
+  echo ""
+  echo "Usage: $(basename "$0") [OPTIONS] OPERATION WALLET_ID"
+  echo ""
+  echo "Available options:"
+  echo "  -h, --help                     display this help message"
+  echo "  -q, --quiet                    supress messages from this script"
+  echo "  -v, --verbose                  enable verbose mode"
+  echo "  -y, --yes                      do not ask for confirmation of destructive operations"
+  echo ""
+  echo "Operations:"
+  echo "  address (default operation)    get the address for the wallet called WALLET_ID"
+  echo "  balance                        get the balance for the wallet called WALLET_ID"
+  echo "  signing-key                    get the signing key for the wallet called WALLET_ID"
+  echo "  verification-key               get the verification key for the wallet called WALLET_ID"
+  echo "  create                         create a wallet called WALLET_ID"
+  echo "  remove                         remove the wallet called WALLET_ID"
+}
+
+echoerr (){
+  cat <<< "$@" 1>&2;
+}
+
+# Test whether getopt works
+! getopt --test > /dev/null
+if [[ ${PIPESTATUS[0]} -ne 4 ]]; then
+  echoerr "'getopt --test' failed"
+  exit 101
+fi
+
+# Parse command-line arguments, canonicalizing in-place
+! PARSED=$(getopt --options=$OPTIONS --longoptions=$LONGOPTS --name "$0" -- "$@")
+if [[ ${PIPESTATUS[0]} -ne 0 ]]; then
+  echoerr "Failed to parse arguments"
+  exit 102
+fi
+
+# Handle arguments
+eval handle_args "$PARSED"
+
+# Perform the main program
+main
