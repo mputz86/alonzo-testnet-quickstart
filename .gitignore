@@ -1,0 +1,5 @@
+.cardano-node
+bin
+node.log
+state-node-alonzo-blue
+wallet
