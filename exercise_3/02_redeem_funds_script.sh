@@ -1,15 +1,24 @@
 #!/bin/bash
 
 # ======================================================================
-# Common for locking and redemption
+# Common Utilities
 # ===================================
+balance() {
+  if [ "$#" -eq 0 ]; then
+    echo "Missing address argument to 'balance/1'"
+    exit 1
+  fi
+  cardano-cli query utxo --testnet-magic 5 --address "$1" --out-file /dev/stdout
+}
+
 common() {
-  tx_name="$(date +'%Y-%m-%d_%T')_$(basename $0 .sh)_$operation"
-  echo Tx Name: $tx_name
+  base_dir=$(dirname $0)
+
+  params_file="$base_dir/params.json"
 
   # ===================================
   # Script and datum
-  script_file='./plutus/untyped-always-succeeds-txin.plutus'
+  script_file="$base_dir/plutus/untyped-always-succeeds-txin.plutus"
   script_address_file="$script_file.addr"
   script_budget_file="$script_file.budget.json"
   if [ ! -f "$script_file" ] || [ ! -f "$script_budget_file" ]; then
@@ -50,7 +59,7 @@ common() {
 
   min_redemption_cost=$(jq -n \
     --argjson fixed_cost $fixed_cost \
-    --argjson prices "$(cat params.json | jq '.executionUnitPrices')" \
+    --argjson prices "$(cat $params_file | jq '.executionUnitPrices')" \
     --argjson budget "$min_execution_units" \
     '{"Steps": ($prices.priceSteps * $budget.Steps), "Memory": ($prices.priceMemory * $budget.Memory)} | add + $fixed_cost')
   echo Minimum Cost to Redeem: $min_redemption_cost
@@ -67,12 +76,38 @@ common() {
 
   # ===================================
   # Required collateral
-  collateral_percentage=$(cat params.json | jq '.collateralPercentage')
+  collateral_percentage=$(cat $params_file | jq '.collateralPercentage')
   collateral_value_required=$(($scaled_redemption_cost * $collateral_percentage / 100))
   echo Collateral Percentage Required: $collateral_percentage%
   echo Collateral Value Required: $collateral_value_required
 }
 
+# ======================================================================
+# Utilities
+# ===================================
+clean_tx_log() {
+  cd tx
+  transactions=$(ls | \
+    jq -R | \
+    jq --slurp 'map(capture("(?<name>.+)\\.(?<ext>\\w+)$")) | group_by(.name)' | \
+    jq 'map(select(map(.ext) | contains(["submitted"]) | not))' | \
+    jq 'flatten | map("\(.name).\(.ext)") | join (" ")' | \
+    jq -r)
+  if [ ! -z "$transactions" ]; then
+    rm --verbose $transactions
+  fi
+}
+
+setup_tx_log() {
+  tx_name="transaction_$(date +'%Y-%m-%d_%T')_$operation"
+
+  tx_file="$base_dir/tx/$tx_name"
+  echo Transaction File: $tx_name
+}
+
+# ======================================================================
+# Redeem funds from script
+# ===================================
 redeem_funds() {
   if [ $utxos_with_my_datum_len -eq 0 ]; then
     echo "No utxos detected with this datum. There is nothing to redeem."
@@ -133,10 +168,12 @@ redeem_funds() {
 
   # ===================================
   # Construct transaction
+  setup_tx_log
+
   cardano-cli transaction build-raw --alonzo-era \
-    --out-file tx/$tx_name.unsigned \
+    --out-file $tx_file.unsigned \
     --fee $fee \
-    --protocol-params-file params.json \
+    --protocol-params-file $params_file \
     --tx-in $tx_in \
     --tx-in-script-file $script_file \
     --tx-in-datum-value $datum \
@@ -145,10 +182,10 @@ redeem_funds() {
     --tx-in-collateral $tx_in_collateral \
     --tx-out $tx_out_change
 
-  if [ -f tx/$tx_name.unsigned ]; then
+  if [ -f $tx_file.unsigned ]; then
     cardano-cli transaction sign --testnet-magic 5 \
-      --out-file tx/$tx_name.signed \
-      --tx-body-file tx/$tx_name.unsigned \
+      --out-file $tx_file.signed \
+      --tx-body-file $tx_file.unsigned \
       --signing-key-file $tx_in_collateral_signing_key
   fi
 }
@@ -157,37 +194,13 @@ redeem_funds() {
 # Submit transaction
 # ===================================
 submit() {
-  if [ -f tx/$tx_name.signed ]; then
+  if [ -f $tx_file.signed ]; then
     read -p "Are you sure you want to submit this transaction (y/n)? " -n 1 -r confirmation
     echo ""
     if [[ $confirmation =~ ^[Yy]$ ]]; then
-      touch tx/$tx_name.submitted
-      cardano-cli transaction submit --testnet-magic 5 --tx-file tx/$tx_name.signed
+      touch $tx_file.submitted
+      cardano-cli transaction submit --testnet-magic 5 --tx-file $tx_file.signed
     fi
-  fi
-}
-
-# ======================================================================
-# Utilities
-# ===================================
-balance() {
-  if [ "$#" -eq 0 ]; then
-    echo "Missing address argument to 'balance/1'"
-    exit 1
-  fi
-  cardano-cli query utxo --testnet-magic 5 --address "$1" --out-file /dev/stdout
-}
-
-clean_tx_log() {
-  cd tx
-  transactions=$(ls | \
-    jq -R | \
-    jq --slurp 'map(capture("(?<name>.+)\\.(?<ext>\\w+)$")) | group_by(.name)' | \
-    jq 'map(select(map(.ext) | contains(["submitted"]) | not))' | \
-    jq 'flatten | map("\(.name).\(.ext)") | join (" ")' | \
-    jq -r)
-  if [ ! -z "$transactions" ]; then
-    rm --verbose $transactions
   fi
 }
 
