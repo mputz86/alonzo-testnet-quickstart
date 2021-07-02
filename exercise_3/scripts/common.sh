@@ -12,8 +12,6 @@ balance() {
 }
 
 common() {
-  params_file="./params.json"
-
   # ===================================
   # Script and datum
   script_file="./plutus/untyped-always-succeeds-txin.plutus"
@@ -57,7 +55,7 @@ common() {
 
   min_redemption_cost=$(jq -n \
     --argjson fixed_cost $fixed_cost \
-    --argjson prices "$(cat $params_file | jq '.executionUnitPrices')" \
+    --argjson prices "$(cardano-cli query protocol-parameters --testnet-magic 5 | jq '.executionUnitPrices')" \
     --argjson budget "$min_execution_units" \
     '{"Steps": ($prices.priceSteps * $budget.Steps), "Memory": ($prices.priceMemory * $budget.Memory)} | add + $fixed_cost')
   echo Minimum Cost to Redeem: $min_redemption_cost
@@ -74,7 +72,7 @@ common() {
 
   # ===================================
   # Required collateral
-  collateral_percentage=$(cat $params_file | jq '.collateralPercentage')
+  collateral_percentage=$(cardano-cli query protocol-parameters --testnet-magic 5 | jq '.collateralPercentage')
   collateral_value_required=$(($scaled_redemption_cost * $collateral_percentage / 100))
   echo Collateral Percentage Required: $collateral_percentage%
   echo Collateral Value Required: $collateral_value_required

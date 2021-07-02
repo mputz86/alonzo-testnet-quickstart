@@ -66,6 +66,8 @@ fund_collateral() {
   setup_tx_file
   echo Tx File: $tx_file
 
+  cardano-cli query protocol-parameters --testnet-magic 5 --out-file $tx_file.params
+
   cardano-cli transaction build-raw --mary-era \
     --out-file $tx_file.unsigned \
     --fee $fee \

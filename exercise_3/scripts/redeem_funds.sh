@@ -66,10 +66,12 @@ redeem_funds() {
   setup_tx_file
   echo Tx File: $tx_file
 
+  cardano-cli query protocol-parameters --testnet-magic 5 --out-file $tx_file.params
+
   cardano-cli transaction build-raw --alonzo-era \
     --out-file $tx_file.unsigned \
     --fee $fee \
-    --protocol-params-file $params_file \
+    --protocol-params-file $tx_file.params \
     --tx-in $tx_in \
     --tx-in-script-file $script_file \
     --tx-in-datum-value $datum \
