@@ -1,5 +1,4 @@
 #!/bin/bash
-base_dir=$(dirname $0)
 
 # ======================================================================
 # Common Utilities
@@ -13,11 +12,11 @@ balance() {
 }
 
 common() {
-  params_file="$base_dir/params.json"
+  params_file="./params.json"
 
   # ===================================
   # Script and datum
-  script_file="$base_dir/plutus/untyped-always-succeeds-txin.plutus"
+  script_file="./plutus/untyped-always-succeeds-txin.plutus"
   script_address_file="$script_file.addr"
   script_budget_file="$script_file.budget.json"
   if [ ! -f "$script_file" ] || [ ! -f "$script_budget_file" ]; then
@@ -85,7 +84,7 @@ common() {
 # Log generated and submitted transactions
 # ===================================
 clean_tx_log() {
-  cd "$base_dir/tx"
+  cd "./tx"
   transactions=$(ls | \
     jq -R | \
     jq --slurp 'map(capture("(?<name>.+)\\.(?<ext>\\w+)$")) | group_by(.name)' | \
@@ -100,8 +99,7 @@ clean_tx_log() {
 setup_tx_file() {
   tx_name="transaction_$(date +'%Y-%m-%d_%T')_$operation"
 
-  tx_file="$base_dir/tx/$tx_name"
-  echo Transaction File: $tx_file
+  tx_file="./tx/$tx_name"
 }
 
 # ======================================================================

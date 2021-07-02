@@ -1,7 +1,4 @@
 #!/bin/bash
-base_dir=$(dirname $0)
-
-source $base_dir/common.sh
 
 # ======================================================================
 # Redeem funds from script
@@ -67,6 +64,7 @@ redeem_funds() {
   # ===================================
   # Construct transaction
   setup_tx_file
+  echo Tx File: $tx_file
 
   cardano-cli transaction build-raw --alonzo-era \
     --out-file $tx_file.unsigned \
@@ -87,124 +85,4 @@ redeem_funds() {
       --signing-key-file $tx_in_collateral_signing_key
   fi
 }
-
-# ======================================================================
-# Main program
-# ===================================
-main() {
-  case $operation in
-    redeem)
-      common && redeem_funds && submit
-      ;;
-    clean-tx-log)
-      clean_tx_log
-      ;;
-    *)
-      echo "Programming error: command $operation is not implemented."
-      exit 201
-      ;;
-  esac
-
-}
-
-# ======================================================================
-# Parse command-line arguments
-# ===================================
-OPTIONS=h
-LONGOPTS=help
-
-handle_args() {
-  # Handle option args
-  while true; do
-      case "$1" in
-          -h|--help)
-              show_help
-              exit 0
-              ;;
-          --)
-              shift
-              break
-              ;;
-          *)
-              echo "Unknown options provided: $@"
-              exit 51
-              ;;
-      esac
-  done
-
-  if [[ "$#" -eq 0 ]]; then
-    show_help
-    exit 0
-  fi
-
-  operation="$1"
-  shift
-
-  # Handle positional args
-  case "$operation" in
-    fund-collateral)
-      amount_to_send="$1"
-      shift
-      ;;
-    lock)
-      amount_to_send="$1"
-      shift
-      ;;
-    redeem)
-      ;;
-    clean-tx-log)
-      ;;
-    *)
-      echo "Unknown operation: $@"
-      exit 52
-      ;;
-  esac
-
-  if [[ "$#" > 0 ]]; then
-    echo "Unknown arguments provided for operation '$operation': '$@'"
-    exit 53
-  fi
-}
-
-show_help() {
-  # Help message
-  echo "$(basename "$0") - example script that implements Exercise 3"
-  echo "for the Alonzo Testnet. Exercise 3 locks and then redeems"
-  echo "some funds into/from a script that always succeeds."
-  echo ""
-  echo "Usage: $(basename "$0") [OPTIONS] OPERATION WALLET_ID"
-  echo ""
-  echo "Available options:"
-  echo "  -h, --help                     display this help message"
-  echo ""
-  echo "Operations:"
-  echo "  fund-collateral AMOUNT         send AMOUNT to collateral wallet"
-  echo "  lock AMOUNT                    lock AMOUNT of funds into the script"
-  echo "  redeem                         redeem funds from the script"
-  echo "  clean-tx-log                   remove previous unsubmitted transactions"
-}
-
-# ======================================================================
-# Let's go!
-# ===================================
-
-# Test whether getopt works
-! getopt --test > /dev/null
-if [[ ${PIPESTATUS[0]} -ne 4 ]]; then
-  echoerr "'getopt --test' failed"
-  exit 101
-fi
-
-# Parse command-line arguments, canonicalizing in-place
-! PARSED=$(getopt --options=$OPTIONS --longoptions=$LONGOPTS --name "$0" -- "$@")
-if [[ ${PIPESTATUS[0]} -ne 0 ]]; then
-  echoerr "Failed to parse arguments"
-  exit 102
-fi
-
-# Handle arguments
-eval handle_args "$PARSED"
-
-# Perform the main program
-main
 
