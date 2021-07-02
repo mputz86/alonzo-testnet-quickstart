@@ -3,3 +3,4 @@ bin
 node.log
 state-node-alonzo-blue
 wallet
+**/tx
