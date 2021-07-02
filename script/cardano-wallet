@@ -246,8 +246,9 @@ handle_args() {
 
 show_help() {
   # Help message
-  echo "$(basename "$0") - example bash script that parses options and parameters from"
-  echo "command-line arguments"
+  echo "$(basename "$0") - Helper script to handle \"wallets\" in"
+  echo "the Alonzo Testnet. A \"wallet\" is a set of skeys/vkeys"
+  echo "for payment/staking, plus a public address."
   echo ""
   echo "Usage: $(basename "$0") [OPTIONS] OPERATION WALLET_ID"
   echo ""
