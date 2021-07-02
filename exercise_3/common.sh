@@ -81,12 +81,11 @@ common() {
   echo Collateral Value Required: $collateral_value_required
 }
 
-
 # ======================================================================
 # Log generated and submitted transactions
 # ===================================
 clean_tx_log() {
-  cd tx
+  cd "$base_dir/tx"
   transactions=$(ls | \
     jq -R | \
     jq --slurp 'map(capture("(?<name>.+)\\.(?<ext>\\w+)$")) | group_by(.name)' | \
@@ -98,10 +97,25 @@ clean_tx_log() {
   fi
 }
 
-setup_tx_log() {
+setup_tx_file() {
   tx_name="transaction_$(date +'%Y-%m-%d_%T')_$operation"
 
   tx_file="$base_dir/tx/$tx_name"
   echo Transaction File: $tx_file
 }
+
+# ======================================================================
+# Submit transaction
+# ===================================
+submit() {
+  if [ -f $tx_file.signed ]; then
+    read -p "Are you sure you want to submit this transaction (y/n)? " -n 1 -r confirmation
+    echo ""
+    if [[ $confirmation =~ ^[Yy]$ ]]; then
+      touch $tx_file.submitted
+      cardano-cli transaction submit --testnet-magic 5 --tx-file $tx_file.signed
+    fi
+  fi
+}
+
 

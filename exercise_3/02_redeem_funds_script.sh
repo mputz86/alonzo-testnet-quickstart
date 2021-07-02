@@ -66,7 +66,7 @@ redeem_funds() {
 
   # ===================================
   # Construct transaction
-  setup_tx_log
+  setup_tx_file
 
   cardano-cli transaction build-raw --alonzo-era \
     --out-file $tx_file.unsigned \
@@ -85,20 +85,6 @@ redeem_funds() {
       --out-file $tx_file.signed \
       --tx-body-file $tx_file.unsigned \
       --signing-key-file $tx_in_collateral_signing_key
-  fi
-}
-
-# ======================================================================
-# Submit transaction
-# ===================================
-submit() {
-  if [ -f $tx_file.signed ]; then
-    read -p "Are you sure you want to submit this transaction (y/n)? " -n 1 -r confirmation
-    echo ""
-    if [[ $confirmation =~ ^[Yy]$ ]]; then
-      touch $tx_file.submitted
-      cardano-cli transaction submit --testnet-magic 5 --tx-file $tx_file.signed
-    fi
   fi
 }
 
