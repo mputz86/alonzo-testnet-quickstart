@@ -26,17 +26,32 @@ redeem_funds() {
   echo Required Inflow: $required_inflow
 
   # ===================================
+  # Wallet utxo selection
+  main_wallet_utxo_sufficient=$(cardano-wallet balance main \
+    | jq --argjson payment "$required_inflow" 'to_entries | map(select(.value.value.lovelace >= $payment))' \
+    | jq 'min_by(.value.value.lovelace)')
+  echo Main Wallet: $(cardano-wallet main)
+  echo Main Wallet Sufficient Utxo:
+  echo $main_wallet_utxo_sufficient
+
+  # ===================================
   # Lovelace inflow and outflow
   echo Main Wallet: $(cardano-wallet main)
 
-  inflow=$(echo $script_utxo_with_my_datum | jq -r '.value.value.lovelace')
-  echo Inflow: $inflow
+  inflow_script=$(echo $script_utxo_with_my_datum | jq -r '.value.value.lovelace')
+  echo "Inflow (Script): $inflow_script"
+
+  inflow_main=$(echo $main_wallet_utxo_sufficient | jq -r '.value.value.lovelace')
+  echo "Inflow (Main): $inflow_main"
+
+  inflow=$(($inflow_script + $inflow_main))
+  echo "Inflow (Total): $inflow"
 
   amount_change=$(($inflow - $fee))
   echo Amount Change: $amount_change
 
   if (( "$amount_change" < "0" )); then
-    echo "Error: Input Balance ($inflow) is insufficient to pay the fee ($fee)"
+    echo "Error: Transcation inflow funds ($inflow) are insufficient to pay the fee ($fee)"
     exit 1
   fi
 
@@ -55,19 +70,26 @@ redeem_funds() {
 
   # ===================================
   # Inputs and outputs
-  tx_in=$(echo $script_utxo_with_my_datum | jq -r '.key')
-  tx_in_value=$(echo $script_utxo_with_my_datum | jq -r '.value.value.lovelace')
-  echo "Tx In: $tx_in ($tx_in_value)"
+  tx_in_main=$(echo $main_wallet_utxo_sufficient | jq -r '.key')
+  tx_in_main_value=$(echo $main_wallet_utxo_sufficient | jq -r '.value.value.lovelace')
+  echo "Tx In (Main): $tx_in_main ($tx_in_main_value)"
+
+  tx_in_main_signing_key=$(cardano-wallet signing-key main)
+  echo "Tx In (Main) Signing Key: $tx_in_main_signing_key"
+
+  tx_in_script=$(echo $script_utxo_with_my_datum | jq -r '.key')
+  tx_in_script_value=$(echo $script_utxo_with_my_datum | jq -r '.value.value.lovelace')
+  echo "Tx In (Script): $tx_in_script ($tx_in_script_value)"
 
   tx_in_collateral=$(echo $collateral_utxo_sufficient | jq -r '.key')
   tx_in_collateral_value=$(echo $collateral_utxo_sufficient | jq -r '.value.value.lovelace')
-  echo "Tx In Collateral: $tx_in_collateral ($tx_in_collateral_value)"
+  echo "Tx In (Collateral): $tx_in_collateral ($tx_in_collateral_value)"
 
   tx_in_collateral_signing_key=$(cardano-wallet signing-key collateral)
-  echo Tx In Collateral Signing Key: $tx_in_collateral_signing_key
+  echo "Tx In (Collateral) Signing Key: $tx_in_collateral_signing_key"
 
   tx_out_change="$(cardano-wallet main)+$amount_change"
-  echo Tx Out Change: $tx_out_change
+  echo "Tx Out (Main) Change: $tx_out_change"
 
   # ===================================
   # Construct transaction
@@ -80,7 +102,8 @@ redeem_funds() {
     --out-file $tx_file.unsigned \
     --fee $fee \
     --protocol-params-file $tx_file.params \
-    --tx-in $tx_in \
+    --tx-in $tx_in_main \
+    --tx-in $tx_in_script \
     --tx-in-script-file $script_file \
     --tx-in-datum-value $datum \
     --tx-in-redeemer-value $datum \
@@ -92,6 +115,7 @@ redeem_funds() {
     cardano-cli transaction sign --testnet-magic 5 \
       --out-file $tx_file.signed \
       --tx-body-file $tx_file.unsigned \
+      --signing-key-file $tx_in_main_signing_key \
       --signing-key-file $tx_in_collateral_signing_key
   fi
 }

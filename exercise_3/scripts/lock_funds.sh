@@ -62,16 +62,16 @@ lock_funds() {
   # ===================================
   # Inputs and outputs
   tx_in=$(echo $main_wallet_utxo_sufficient | jq -r '.key')
-  echo Tx In: $tx_in
+  echo "Tx In (Main): $tx_in"
 
   tx_in_signing_key=$(cardano-wallet signing-key main)
-  echo Tx In Signing Key: $tx_in_signing_key
+  echo "Tx In (Main) Signing Key: $tx_in_signing_key"
 
   tx_out_change="$(cardano-wallet main)+$amount_change"
-  echo Tx Out Change: $tx_out_change
+  echo "Tx Out (Main) Change: $tx_out_change"
 
   tx_out_payment="$script_address+$amount_to_send"
-  echo Tx Out Payment: $tx_out_payment
+  echo "Tx Out (Script) Payment: $tx_out_payment"
 
   # ===================================
   # Construct transaction
