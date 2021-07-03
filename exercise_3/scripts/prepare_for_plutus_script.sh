@@ -17,8 +17,16 @@ prepare_for_plutus_script() {
   echo Script File: $script_file
   echo Script Address: $script_address
 
-  datum='"coolness"'
-  datum_hash=$(cardano-cli transaction hash-script-data --script-data-value '"coolness"')
+  datum_file="./datum.txt"
+  if [ ! -f "$datum_file" ]; then
+    echo "Datum file ($datum_file) does not exist."
+    echo "Please create one with the following command and put it in the exercise_3 folder:"
+    echo "  echo \"\\\"\$(head /dev/urandom | tr -dc A-Za-z0-9 | head -c 13)\\\"\" > datum.txt"
+    exit 1
+  fi
+
+  datum=$(cat datum.txt)
+  datum_hash=$(cardano-cli transaction hash-script-data --script-data-value $datum)
   echo Datum: $datum
   echo Datum Hash: $datum_hash
 
