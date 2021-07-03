@@ -37,16 +37,19 @@ common() {
 
   min_execution_units=$(cat $script_budget_file | jq)
 
-  min_redemption_cost=$(jq -n -r \
+  min_execution_cost=$(jq -n -r \
     --argjson fixed_cost $fixed_cost \
     --argjson prices "$(cardano-cli query protocol-parameters --testnet-magic 5 | jq '.executionUnitPrices')" \
     --argjson budget "$min_execution_units" \
-    '{"Steps": ($prices.priceSteps * $budget.Steps), "Memory": ($prices.priceMemory * $budget.Memory)} | add + $fixed_cost')
+    '{"Steps": ($prices.priceSteps * $budget.Steps), "Memory": ($prices.priceMemory * $budget.Memory)} | add')
+
+  min_redemption_cost=$(($min_execution_cost + $fixed_cost))
   echo Minimum Cost to Redeem: $min_redemption_cost
 
-  scalar_factor=100
+  scalar_factor=20
   scaled_execution_units=$(echo $min_execution_units | jq --argjson factor $scalar_factor 'map_values(. * $factor)')
-  scaled_redemption_cost=$(($min_redemption_cost * $scalar_factor))
+  scaled_execution_cost=$(($min_redemption_cost * $scalar_factor))
+  scaled_redemption_cost=$(($scaled_execution_cost + $fixed_cost))
   echo "Scalar factor: $scalar_factor"
   echo "Scaled-up Execution Units to Redeem (just in case): $scaled_execution_units"
   echo "Scaled-up Cost to Redeem (just in case): $scaled_redemption_cost"
