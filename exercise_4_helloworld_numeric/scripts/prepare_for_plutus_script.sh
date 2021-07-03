@@ -6,7 +6,7 @@
 prepare_for_plutus_script() {
   # ===================================
   # Script and datum
-  script_file="./plutus/helloworld.plutus"
+  script_file="./plutus/helloworld-numeric.plutus"
   script_budget_file="$script_file.budget.json"
   if [ ! -f "$script_file" ] || [ ! -f "$script_budget_file" ]; then
     echo "Script files do not exist!"
