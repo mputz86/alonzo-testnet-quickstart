@@ -8,12 +8,16 @@ main() {
 
   source "./scripts/common.sh"
   source "./scripts/fund_collateral.sh"
+  source "./scripts/withdraw_collateral.sh"
   source "./scripts/lock_funds.sh"
   source "./scripts/redeem_funds.sh"
 
   case $operation in
     fund-collateral)
       common && fund_collateral && submit
+      ;;
+    withdraw-collateral)
+      common && withdraw_collateral && submit
       ;;
     lock-funds)
       common && lock_funds && submit
@@ -68,6 +72,10 @@ handle_args() {
   case "$operation" in
     fund-collateral)
       amount_to_send="$1"
+      shift
+      ;;
+    withdraw-collateral)
+      amount_to_withdraw="$1"
       shift
       ;;
     lock-funds)
