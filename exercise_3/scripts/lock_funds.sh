@@ -18,7 +18,7 @@ lock_funds() {
 
   # ===================================
   # Script utxo selection
-  script_utxo_with_my_datum=$(balance $(cat $script_address_file) --out-file /dev/stdout \
+  script_utxo_with_my_datum=$(cardano-wallet balance-script $script_file \
     | jq --arg utxo $datum_hash 'to_entries | map(select(.value.data == $utxo))' \
     | jq 'max_by(.value.value.lovelace)')
   echo Script Utxo with My Datum:

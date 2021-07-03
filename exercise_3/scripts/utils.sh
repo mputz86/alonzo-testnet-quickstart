@@ -1,17 +1,6 @@
 #!/bin/bash
 
 # ======================================================================
-# Balance: utxos at address
-# ===================================
-balance() {
-  if [ "$#" -eq 0 ]; then
-    echo "Missing address argument to 'balance/1'"
-    exit 1
-  fi
-  cardano-cli query utxo --testnet-magic 5 --address "$1" --out-file /dev/stdout
-}
-
-# ======================================================================
 # Transaction expiry slot
 # ===================================
 get_tx_expiry_slot() {

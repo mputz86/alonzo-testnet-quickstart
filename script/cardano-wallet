@@ -3,20 +3,41 @@
 # ====================================================================
 # Main logic of the script
 # ==========================================================
-main() {
+validate_wallet_id() {
   if [ -z $wallet_id ]; then
     echoerr "Wallet ID unspecified for operation '$operation'"
     exit 1
   fi
+}
 
+validate_wallet_dir() {
+  if [ ! -d $wallet_dir ]; then
+    echoerr "Wallet $wallet_id doesn't exist at $wallet_dir"
+    exit 1
+  fi
+}
+
+validate_wallet_dir_does_not_exist() {
+  if [ -d $wallet_dir ]; then
+    echoerr "Wallet $wallet_id already exists at $wallet_dir"
+    exit 1
+  fi
+}
+
+validate_script_file() {
+  if [[ "$script_file" != *.plutus ]] || [ ! -f "$script_file" ]; then
+    echoerr "Provided argument does not correspond to a plutus script file: $script_file"
+    exit 1
+  fi
+}
+
+main() {
   wallet_dir="$NODE_HOME/wallet/$wallet_id"
 
   case $operation in
     address)
-      if [ ! -d $wallet_dir ]; then
-        echoerr "Wallet $wallet_id doesn't exist at $wallet_dir"
-        exit 1
-      fi
+      validate_wallet_id
+      validate_wallet_dir
 
       wallet_address_file="$wallet_dir/payment.addr"
       if [ ! -f $wallet_address_file ]; then
@@ -26,39 +47,14 @@ main() {
 
       cat $wallet_address_file
       ;;
-    signing-key)
-      if [ ! -d $wallet_dir ]; then
-        echoerr "Wallet $wallet_id doesn't exist at $wallet_dir"
-        exit 1
-      fi
+    address-script)
+      validate_script_file
 
-      wallet_signing_key_file="$wallet_dir/payment.skey"
-      if [ ! -f $wallet_signing_key_file ]; then
-        echoerr "Signing key file for wallet $wallet_id doesn't exist at $wallet_signing_key_file"
-        exit 1
-      fi
-
-      echo $wallet_signing_key_file
-      ;;
-    verification-key)
-      if [ ! -d $wallet_dir ]; then
-        echoerr "Wallet $wallet_id doesn't exist at $wallet_dir"
-        exit 1
-      fi
-
-      wallet_verification_key_file="$wallet_dir/payment.vkey"
-      if [ ! -f $wallet_verification_key_file ]; then
-        echoerr "Signing key file for wallet $wallet_id doesn't exist at $wallet_verification_key_file"
-        exit 1
-      fi
-
-      echo $wallet_verification_key_file
+      cardano-cli address build --payment-script-file $script_file --testnet-magic 5 --out-file /dev/stdout
       ;;
     balance)
-      if [ ! -d $wallet_dir ]; then
-        echoerr "Wallet $wallet_id doesn't exist at $wallet_dir"
-        exit 1
-      fi
+      validate_wallet_id
+      validate_wallet_dir
 
       wallet_address_file="$wallet_dir/payment.addr"
       if [ ! -f $wallet_address_file ]; then
@@ -66,16 +62,18 @@ main() {
         exit 1
       fi
 
-      
       wallet_address=$(cat $wallet_address_file)
-
       cardano-cli query utxo --address $wallet_address --testnet-magic 5 --out-file /dev/stdout
       ;;
+    balance-script)
+      validate_script_file
+
+      script_address=$(cardano-cli address build --payment-script-file $script_file --testnet-magic 5 --out-file /dev/stdout)
+      cardano-cli query utxo --address $script_address --testnet-magic 5 --out-file /dev/stdout
+      ;;
     create)
-      if [ -d $wallet_dir ]; then
-        echoerr "Cannot create wallet $wallet_id, because it already exists at $wallet_dir"
-        exit 1
-      fi
+      validate_wallet_id
+      validate_wallet_dir_does_not_exist
 
       echo "Creating wallet $wallet_id at $wallet_dir"
       mkdir -p $wallet_dir
@@ -105,10 +103,8 @@ main() {
         --testnet-magic 5
       ;;
    remove)
-      if [ ! -d $wallet_dir ]; then
-        echoerr "Wallet $wallet_id doesn't exist at $wallet_dir"
-        exit 0
-      fi
+      validate_wallet_id
+      validate_wallet_dir
 
       if $yes; then
         confirmation='y'
@@ -121,6 +117,30 @@ main() {
         echo "Removing wallet $wallet_id"
         rm -rf $wallet_dir
       fi
+      ;;
+    signing-key)
+      validate_wallet_id
+      validate_wallet_dir
+
+      wallet_signing_key_file="$wallet_dir/payment.skey"
+      if [ ! -f $wallet_signing_key_file ]; then
+        echoerr "Signing key file for wallet $wallet_id doesn't exist at $wallet_signing_key_file"
+        exit 1
+      fi
+
+      echo -n $wallet_signing_key_file
+      ;;
+    verification-key)
+      validate_wallet_id
+      validate_wallet_dir
+
+      wallet_verification_key_file="$wallet_dir/payment.vkey"
+      if [ ! -f $wallet_verification_key_file ]; then
+        echoerr "Signing key file for wallet $wallet_id doesn't exist at $wallet_verification_key_file"
+        exit 1
+      fi
+
+      echo -n $wallet_verification_key_file
       ;;
     *)
       echoerr "Programming error: operation '$operation' not implemented."
@@ -187,52 +207,50 @@ handle_args() {
     exit 0
   fi
 
+  operation="$1"
+  shift
+
   # Handle positional args
-  case "$1" in
+  case "$operation" in
     address)
-      operation="$1"
-      shift
       wallet_id="$1"
+      shift
+      ;;
+    address-script)
+      script_file="$1"
       shift
       ;;
     balance)
-      operation="$1"
-      shift
       wallet_id="$1"
       shift
       ;;
-    signing-key)
-      operation="$1"
-      shift
-      wallet_id="$1"
-      shift
-      ;;
-    verification-key)
-      operation="$1"
-      shift
-      wallet_id="$1"
+    balance-script)
+      script_file="$1"
       shift
       ;;
     create)
-      operation="$1"
-      shift
       wallet_id="$1"
       shift
       ;;
     remove)
-      operation="$1"
+      wallet_id="$1"
       shift
+      ;;
+    signing-key)
+      wallet_id="$1"
+      shift
+      ;;
+    verification-key)
       wallet_id="$1"
       shift
       ;;
     *)
       # If no operation provided, then default to 'address'
-      if [[ "$#" -eq 1 ]]; then
+      if [[ "$#" -eq 0 ]]; then
+        wallet_id="$operation"
         operation="address"
-        wallet_id="$1"
-        shift
       else
-        echoerr "Unknown operation: $@"
+        echoerr "Unknown operation: $operation"
         exit 52
       fi
       ;;
@@ -250,7 +268,7 @@ show_help() {
   echo "the Alonzo Testnet. A \"wallet\" is a set of skeys/vkeys"
   echo "for payment/staking, plus a public address."
   echo ""
-  echo "Usage: $(basename "$0") [OPTIONS] OPERATION WALLET_ID"
+  echo "Usage: $(basename "$0") [OPTIONS] OPERATION"
   echo ""
   echo "Available options:"
   echo "  -h, --help                     display this help message"
@@ -258,13 +276,15 @@ show_help() {
   echo "  -v, --verbose                  enable verbose mode"
   echo "  -y, --yes                      do not ask for confirmation of destructive operations"
   echo ""
-  echo "Operations:"
-  echo "  address (default operation)    get the address for the wallet called WALLET_ID"
-  echo "  balance                        get the balance for the wallet called WALLET_ID"
-  echo "  signing-key                    get the signing key for the wallet called WALLET_ID"
-  echo "  verification-key               get the verification key for the wallet called WALLET_ID"
-  echo "  create                         create a wallet called WALLET_ID"
-  echo "  remove                         remove the wallet called WALLET_ID"
+  echo "Operations (default = address):"
+  echo "  address WALLET_ID              get the address for the wallet called WALLET_ID"
+  echo "  address-script SCRIPT_FILE     get the address for a script located at SCRIPT_FILE"
+  echo "  balance WALLET_ID              get the balance for the wallet called WALLET_ID"
+  echo "  balance-script SCRIPT_FILE     get the balance for a script located at SCRIPT_FILE"
+  echo "  create WALLET_ID               create a wallet called WALLET_ID"
+  echo "  remove WALLET_ID               remove the wallet called WALLET_ID"
+  echo "  signing-key WALLET_ID          get the signing key for the wallet called WALLET_ID"
+  echo "  verification-key WALLET_ID     get the verification key for the wallet called WALLET_ID"
 }
 
 echoerr (){
