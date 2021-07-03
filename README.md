@@ -1,5 +1,5 @@
 # Alonzo testnet starting kit
-This repository is intended to help people get started quickly with the Alonzo Testnet. In particular, it contains a fairly robust shell script to lock and then redeem test ADA funds under a simple Plutus Core script.
+This repository is intended to help people get started quickly with the Alonzo Blue testnet. In particular, it contains some fairly robust and convenient scripts that implement some of the testnet exercises.
 
 ## Prerequisites
 This project has been developed/tested on a Linux system, and it requires the following utilities:
@@ -13,31 +13,40 @@ Clone this repository and enter the resulting directory.
 
 Take a look at the `.envrc` file to see what environment variables and path it sets up. Enable direnv: 
 ```
-user@machine$ direnv allow
+[user@machine alonzo-testnet]$ direnv allow
 ```
 
-Install cardano-node and cardano-cli:
+Ensure that you have the IOG binary caches for nix setup:
 ```
-user@machine$ setup-cardano-node-and-cli.sh
+[user@machine alonzo-testnet]$ cat /etc/nix/nix.conf 
+substituters        = https://hydra.iohk.io https://iohk.cachix.org https://cache.nixos.org/
+trusted-public-keys = hydra.iohk.io:f/Ea+s+dFdN+3Y/G+FDgSq+a5NEWhJGzdjvKNGv0/EQ= iohk.cachix.org-1:DpRUyj7h7V830dp/i6Nti+NEO2/nhblbov/8MW7Rqoo= cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY=
+```
+
+Install cardano-node and cardano-cli (using nix):
+```
+[user@machine alonzo-testnet]$ setup-cardano-node-and-cli.sh
 ```
 
 ## Run and monitor a passive cardano node
 Start cardano node:
 ```
-user@machine$ cd $NODE_HOME && cardano-node-alonzo-blue 1>&2> node.log
+[user@machine alonzo-testnet]$ cd $NODE_HOME && cardano-node-alonzo-blue 1>&2> node.log
 ```
 
 Open another terminal tab to monitor the node. For example, if you have the [lnav](https://lnav.org/) utility installed:
 ```
-user@machine$ lnav -t -c ':goto 100%' $NODE_HOME/node.log
+[user@machine alonzo-testnet]$ lnav -t -c ':goto 100%' $NODE_HOME/node.log
 ```
 
 ## Cardano-wallet utility
 The helper script `scripts/cardano-wallet` makes it easier to manage several "wallets" (a wallet includes an address, a payment skey/vkey pair, and a staking skey/vkey pair).
 
+These credentials for each wallet are stored in respective subfolders under `./wallet`, which is ignored by git during commits.
+
 Usage:
 ```
-user@machine$ cardano-wallet --help
+[user@machine alonzo-testnet]$ cardano-wallet --help
 cardano-wallet - Helper script to handle "wallets" in
 the Alonzo Testnet. A "wallet" is a set of skeys/vkeys
 for payment/staking, plus a public address.
@@ -66,19 +75,44 @@ The scripts for the exercises in this repository assume that you have two wallet
 
 Create two wallets 'main' and 'collateral':
 ```
-user@machine$ cardano-wallet create main
+[user@machine alonzo-testnet]$ cardano-wallet create main
 Creating wallet main at $NODE_HOME/wallet/main
 
-user@machine$ cardano-wallet create collateral
+[user@machine alonzo-testnet]$ cardano-wallet create collateral
 Creating wallet main at $NODE_HOME/wallet/collateral
 ```
 
 Beg friends/family for Alonzo testnet ADA, which should be sent to the 'main' address:
 ```
-user@machine$ echo $(cardano-wallet main)
+[user@machine alonzo-testnet]$ echo $(cardano-wallet main)
 addr_test...
 ```
 
 ## Exercise 3
+In this exercise, you are asked to interact with the most trivial on-chain validator, which succeeds regardless of the (datum, redeemer, transaction context) that it is provided with:
+```haskell
+validator :: Data -> Data -> Data -> ()
+validator _ _ _ = ()
+```
 
-See: [./exercise_3/README.md](./exercise_3/README.md).
+This validator has been compiled and serialized and saved at [./exercise_3/plutus/untyped-always-succeeds-txin.plutus](./exercise_3/plutus/untyped-always-succeeds-txin.plutus).
+
+The trick with this exercise is making sure that the datum-hash you provide when locking funds under the validator matches the datum that you provide when redeeming funds from the validator.
+
+More info: [./exercise_3/README.md](./exercise_3/README.md).
+
+## Exercise 4: Helloworld numeric
+In this exercise, you are asked to interact with a slightly less trivial on-chain validator, which succeeds if it is provided with an integer datum `123`, ignoring the redeemer and transaction context:
+```haskell
+hello :: Data
+hello = I 123
+
+helloWorld :: Data -> Data -> Data -> ()
+helloWorld datum _ _ = if datum P.== hello then () else (P.error ())
+```
+
+This validator has been compiled and serialized and saved at [./exercise_4_helloworld_numeric/plutus/helloworld-numeric.plutus](./exercise_4_helloworld_numeric/plutus/helloworld-numeric.plutus).
+
+As with the previous exercise, the trick with this exercise is making sure that the datum-hash you provide when locking funds under the validator matches the datum that you provide when redeeming funds from the validator. Also, the datum needs to be `123`.
+
+More info: [./exercise_4_helloworld_numeric/README.md](./exercise_4_helloworld_numeric/README.md).
