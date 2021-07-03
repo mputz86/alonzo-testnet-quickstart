@@ -81,6 +81,8 @@ lock_funds() {
   get_tx_expiry_slot $((5 * 60))
   echo Tx Expiry Slot: $tx_expiry_slot
 
+  cp $datum_file $tx_file.datum
+
   cardano-cli query protocol-parameters --testnet-magic 5 --out-file $tx_file.params
 
   cardano-cli transaction build-raw --alonzo-era \
