@@ -21,7 +21,7 @@ redeem_funds() {
   # Lovelace inflow and outflow
   echo Main Wallet: $(cardano-wallet main)
 
-  inflow=$(echo $utxos_with_my_datum | jq '.[0].value.value.lovelace')
+  inflow=$(echo $utxos_with_my_datum | jq -r '.[0].value.value.lovelace')
   echo Inflow: $inflow
 
   amount_change=$(($inflow - $fee))
@@ -34,9 +34,9 @@ redeem_funds() {
 
   # ===================================
   # Collateral selection
-  utxos_with_sufficient_collateral=$(cardano-wallet balance collateral | \
-    jq -r --argjson required $collateral_value_required 'to_entries | map(select(.value.value.lovelace >= $required))')
-  utxos_with_sufficient_collateral_len=$(echo $utxos_with_my_datum | jq 'length')
+  utxos_with_sufficient_collateral=$(cardano-wallet balance collateral \
+    | jq --argjson required $collateral_value_required 'to_entries | map(select(.value.value.lovelace >= $required))')
+  utxos_with_sufficient_collateral_len=$(echo $utxos_with_my_datum | jq -r 'length')
   echo Utxos with Sufficient Collateral: $utxos_with_sufficient_collateral_len
   echo $utxos_with_sufficient_collateral
 

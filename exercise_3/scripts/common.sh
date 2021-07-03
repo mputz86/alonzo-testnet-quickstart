@@ -35,9 +35,9 @@ common() {
 
   # ===================================
   # Script utxo selection
-  utxos_with_my_datum=$(balance $(cat $script_address_file) --out-file /dev/stdout | \
-    jq --arg utxo $datum_hash 'to_entries | map(select(.value.data == $utxo))')
-  utxos_with_my_datum_len=$(echo $utxos_with_my_datum | jq 'length')
+  utxos_with_my_datum=$(balance $(cat $script_address_file) --out-file /dev/stdout \
+    | jq --arg utxo $datum_hash 'to_entries | map(select(.value.data == $utxo))')
+  utxos_with_my_datum_len=$(echo $utxos_with_my_datum | jq -r 'length')
   echo Utxos with My Datum: $utxos_with_my_datum_len
   echo $utxos_with_my_datum
 
@@ -53,7 +53,7 @@ common() {
 
   min_execution_units=$(cat $script_budget_file | jq)
 
-  min_redemption_cost=$(jq -n \
+  min_redemption_cost=$(jq -n -r \
     --argjson fixed_cost $fixed_cost \
     --argjson prices "$(cardano-cli query protocol-parameters --testnet-magic 5 | jq '.executionUnitPrices')" \
     --argjson budget "$min_execution_units" \
@@ -72,7 +72,7 @@ common() {
 
   # ===================================
   # Required collateral
-  collateral_percentage=$(cardano-cli query protocol-parameters --testnet-magic 5 | jq '.collateralPercentage')
+  collateral_percentage=$(cardano-cli query protocol-parameters --testnet-magic 5 | jq -r '.collateralPercentage')
   collateral_value_required=$(($scaled_redemption_cost * $collateral_percentage / 100))
   echo Collateral Percentage Required: $collateral_percentage%
   echo Collateral Value Required: $collateral_value_required
@@ -83,12 +83,12 @@ common() {
 # ===================================
 clean_tx_log() {
   cd "./tx"
-  transactions=$(ls | \
-    jq -R | \
-    jq --slurp 'map(capture("(?<name>.+)\\.(?<ext>\\w+)$")) | group_by(.name)' | \
-    jq 'map(select(map(.ext) | contains(["submitted"]) | not))' | \
-    jq 'flatten | map("\(.name).\(.ext)") | join (" ")' | \
-    jq -r)
+  transactions=$(ls \
+    | jq -R \
+    | jq --slurp 'map(capture("(?<name>.+)\\.(?<ext>\\w+)$")) | group_by(.name)' \
+    | jq 'map(select(map(.ext) | contains(["submitted"]) | not))' \
+    | jq 'flatten | map("\(.name).\(.ext)") | join (" ")' \
+    | jq -r)
   if [ ! -z "$transactions" ]; then
     rm --verbose $transactions
   fi
