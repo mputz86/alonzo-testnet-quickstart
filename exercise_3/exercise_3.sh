@@ -6,7 +6,8 @@
 main() {
   cd $(dirname $0)
 
-  source "./scripts/common.sh"
+  source "./scripts/utils.sh"
+  source "./scripts/prepare_for_plutus_script.sh"
   source "./scripts/fund_collateral.sh"
   source "./scripts/withdraw_collateral.sh"
   source "./scripts/lock_funds.sh"
@@ -14,16 +15,23 @@ main() {
 
   case $operation in
     fund-collateral)
-      common && fund_collateral && submit
+      prepare_for_plutus_script \
+        && fund_collateral \
+        && submit
       ;;
     withdraw-collateral)
-      common && withdraw_collateral && submit
+      withdraw_collateral \
+        && submit
       ;;
     lock-funds)
-      common && lock_funds && submit
+      prepare_for_plutus_script \
+        && lock_funds \
+        && submit
       ;;
     redeem-funds)
-      common && redeem_funds && submit
+      prepare_for_plutus_script \
+        && redeem_funds \
+        && submit
       ;;
     clean-tx-log)
       clean_tx_log
