@@ -7,18 +7,18 @@ main() {
   cd $(dirname $0)
 
   source "./scripts/common.sh"
-  source "./scripts/collateral.sh"
-  source "./scripts/lock.sh"
-  source "./scripts/redeem.sh"
+  source "./scripts/fund_collateral.sh"
+  source "./scripts/lock_funds.sh"
+  source "./scripts/redeem_funds.sh"
 
   case $operation in
     fund-collateral)
       common && fund_collateral && submit
       ;;
-    lock)
+    lock-funds)
       common && lock_funds && submit
       ;;
-    redeem)
+    redeem-funds)
       common && redeem_funds && submit
       ;;
     clean-tx-log)
@@ -70,16 +70,16 @@ handle_args() {
       amount_to_send="$1"
       shift
       ;;
-    lock)
+    lock-funds)
       amount_to_send="$1"
       shift
       ;;
-    redeem)
+    redeem-funds)
       ;;
     clean-tx-log)
       ;;
     *)
-      echo "Unknown operation: $@"
+      echo "Unknown operation: $operation"
       exit 52
       ;;
   esac
