@@ -1,16 +1,8 @@
 #!/bin/bash
 
 # ======================================================================
-# Common Utilities
+# Common prelude
 # ===================================
-balance() {
-  if [ "$#" -eq 0 ]; then
-    echo "Missing address argument to 'balance/1'"
-    exit 1
-  fi
-  cardano-cli query utxo --testnet-magic 5 --address "$1" --out-file /dev/stdout
-}
-
 common() {
   # ===================================
   # Script and datum
@@ -93,6 +85,20 @@ setup_tx_file() {
 }
 
 # ======================================================================
+# Transaction expiry slot
+# ===================================
+get_tx_expiry_slot() {
+  if [ "$#" -eq 0 ]; then
+    echo "Missing address argument to 'tx_expiry_slot/1'"
+    exit 1
+  fi
+
+  current_slot=$(cardano-cli query tip --testnet-magic 5 | jq '.slot')
+
+  tx_expiry_slot=$(($current_slot + "$1"))
+}
+
+# ======================================================================
 # Submit transaction
 # ===================================
 submit() {
@@ -106,4 +112,14 @@ submit() {
   fi
 }
 
+# ======================================================================
+# Balance: utxos at address
+# ===================================
+balance() {
+  if [ "$#" -eq 0 ]; then
+    echo "Missing address argument to 'balance/1'"
+    exit 1
+  fi
+  cardano-cli query utxo --testnet-magic 5 --address "$1" --out-file /dev/stdout
+}
 

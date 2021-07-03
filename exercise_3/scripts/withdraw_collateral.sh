@@ -64,10 +64,14 @@ withdraw_collateral() {
   setup_tx_file
   echo Tx File: $tx_file
 
+  get_tx_expiry_slot $((5 * 60))
+  echo Tx Expiry Slot: $tx_expiry_slot
+
   cardano-cli query protocol-parameters --testnet-magic 5 --out-file $tx_file.params
 
   cardano-cli transaction build-raw --mary-era \
     --out-file $tx_file.unsigned \
+    --invalid-hereafter $tx_expiry_slot \
     --fee $fee \
     --tx-in $tx_in \
     --tx-out $tx_out_change \

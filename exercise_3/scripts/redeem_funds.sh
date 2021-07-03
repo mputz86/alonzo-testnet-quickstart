@@ -96,10 +96,14 @@ redeem_funds() {
   setup_tx_file
   echo Tx File: $tx_file
 
+  get_tx_expiry_slot $((5 * 60))
+  echo Tx Expiry Slot: $tx_expiry_slot
+
   cardano-cli query protocol-parameters --testnet-magic 5 --out-file $tx_file.params
 
   cardano-cli transaction build-raw --alonzo-era \
     --out-file $tx_file.unsigned \
+    --invalid-hereafter $tx_expiry_slot \
     --fee $fee \
     --protocol-params-file $tx_file.params \
     --tx-in $tx_in_main \
