@@ -153,13 +153,11 @@ main() {
 # ==========================================================
 
 # Specify short and long options
-OPTIONS=hqvy
-LONGOPTS=help,quiet,verbose,yes
+OPTIONS=hy
+LONGOPTS=help,yes
 
 handle_args() {
   # Set defaults for variables
-  quiet=false
-  verbose=false
   yes=false
 
   # Handle option args
@@ -168,14 +166,6 @@ handle_args() {
           -h|--help)
               show_help
               exit 0
-              ;;
-          -v|--verbose)
-              verbose=true
-              shift
-              ;;
-          -q|--quiet)
-              quiet=true
-              shift
               ;;
           -y|--yes)
               yes=true
@@ -191,16 +181,6 @@ handle_args() {
               ;;
       esac
   done
-
-  # Verbose overrides quiet
-  if $verbose; then
-    quiet=false
-  fi
-
-  # Turn off echo if quiet option enabled
-  if $quiet; then
-    exec 1>/dev/null # redirect stdout to /dev/null
-  fi
 
   if [[ "$#" -eq 0 ]]; then
     show_help
@@ -268,12 +248,10 @@ show_help() {
   echo "the Alonzo Testnet. A \"wallet\" is a set of skeys/vkeys"
   echo "for payment/staking, plus a public address."
   echo ""
-  echo "Usage: $(basename "$0") [OPTIONS] OPERATION"
+  echo "Usage: $(basename "$0") [OPTIONS] OPERATION (WALLET_ID | SCRIPT_FILE)"
   echo ""
   echo "Available options:"
   echo "  -h, --help                     display this help message"
-  echo "  -q, --quiet                    supress messages from this script"
-  echo "  -v, --verbose                  enable verbose mode"
   echo "  -y, --yes                      do not ask for confirmation of destructive operations"
   echo ""
   echo "Operations (default = address):"
