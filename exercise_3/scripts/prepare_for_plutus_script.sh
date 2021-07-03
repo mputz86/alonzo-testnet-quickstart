@@ -7,17 +7,14 @@ prepare_for_plutus_script() {
   # ===================================
   # Script and datum
   script_file="./plutus/untyped-always-succeeds-txin.plutus"
-  script_address_file="$script_file.addr"
   script_budget_file="$script_file.budget.json"
   if [ ! -f "$script_file" ] || [ ! -f "$script_budget_file" ]; then
     echo "Script files do not exist!"
     exit 1
   fi
 
-  cardano-cli address build --testnet-magic 5 --payment-script-file $script_file --out-file $script_address_file
-  script_address=$(cat $script_address_file)
+  script_address=$(cardano-wallet address-script $script_file)
   echo Script File: $script_file
-  echo Script Address File: $script_address_file
   echo Script Address: $script_address
 
   datum='"coolness"'

@@ -5,7 +5,8 @@
 # ===================================
 get_tx_expiry_slot() {
   if [ "$#" -eq 0 ]; then
-    echo "Missing address argument to 'tx_expiry_slot/1'"
+    echo "Missing argument for get_tx_expiry_slot/1: how much should the transaction"
+    echo "expiry slot be offset from the slot when it is submitted?"
     exit 1
   fi
 
