@@ -59,6 +59,26 @@ Operations (default = address):
   verification-key WALLET_ID     get the verification key for the wallet called WALLET_ID
 ```
 
+## Wallet setup for exercises
+The scripts for the exercises in this repository assume that you have two wallets:
+- `main` holds most of your funds
+- `collateral` holds the utxos that you will use as collateral when consuming script-guarded utxos
+
+Create two wallets 'main' and 'collateral':
+```
+user@machine$ cardano-wallet create main
+Creating wallet main at $NODE_HOME/wallet/main
+
+user@machine$ cardano-wallet create collateral
+Creating wallet main at $NODE_HOME/wallet/collateral
+```
+
+Beg friends/family for Alonzo testnet ADA, which should be sent to the 'main' address:
+```
+user@machine$ echo $(cardano-wallet main)
+addr_test...
+```
+
 ## Exercise 3
 
 See: [./exercise_3/README.md](./exercise_3/README.md).

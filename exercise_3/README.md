@@ -11,22 +11,7 @@ Create a file `datum.txt` to store the datum that you will use for this exercise
 user@machine$ echo "\"$(head /dev/urandom | tr -dc A-Za-z0-9 | head -c 13)\"" > datum.txt
 ```
 
-Create two wallets 'main' and 'collateral':
-```
-user@machine$ cardano-wallet create main
-Creating wallet main at $NODE_HOME/wallet/main
-
-user@machine$ cardano-wallet create collateral
-Creating wallet main at $NODE_HOME/wallet/collateral
-```
-
-Beg friends/family for Alonzo testnet ADA, which should be sent to the 'main' address:
-```
-user@machine$ echo $(cardano-wallet main)
-addr_test...
-```
-
-Ensure that the passive node is running (see above) and that the main address has funds before proceeding.
+Ensure that the passive node is running ([../README.md#run-and-monitor-a-passive-cardano-node](../README.md#run-and-monitor-a-passive-cardano-node))and that the main address has funds before proceeding ([../README.md#wallet-setup-for-exercises](../README.md#wallet-setup-for-exercises)):
 ```
 user@machine$ cardano-wallet balance main
 {
@@ -39,7 +24,7 @@ user@machine$ cardano-wallet balance main
 }
 ```
 
-## Lock funds under the script
+## Fund a sufficient utxo for collateral
 Send some funds to the 'collateral' wallet, which will provide collateral utxos for transactions that consume script-guarded utxos:
 ```
 user@machine$ ./exercise_3.sh fund-collateral $((10*1000*1000))
@@ -52,6 +37,7 @@ Check whether the funds arrived in the collateral wallet:
 user@machine$ watch -n 10 cardano-wallet balance collateral
 ```
 
+## Lock funds under the script
 Lock some funds under the `plutus-always-succeeds.plutus` script:
 ```
 user@machine$ ./exercise_3.sh lock-funds $((1000*1000*1000))
@@ -85,7 +71,7 @@ Check whether the funds arrived in the main wallet:
 user@machine$ watch -n 10 cardano-wallet balance main
 ```
 
-If there are no funds locked under the script with your datum, the `redeem-funds` operation will as you to lock some first:
+If there are no funds locked under the script with your datum, then `redeem-funds` operation will let you know that there is nothing to redeem.
 ```
 user@machine$ ./exercise_3.sh redeem-funds
 ...
@@ -97,5 +83,4 @@ Clean-up generated but unsubmitted transactions, stored in `./tx/`:
 ```
 user@machine$ ./exercise_3.sh clean-tx-log
 ```
-
 
