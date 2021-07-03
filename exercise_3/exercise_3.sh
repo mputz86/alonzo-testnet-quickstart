@@ -7,9 +7,9 @@ main() {
   cd $(dirname $0)
 
   source "./scripts/common.sh"
-  source "./scripts/create_collateral.sh"
-  source "./scripts/lock_funds.sh"
-  source "./scripts/redeem_funds.sh"
+  source "./scripts/collateral.sh"
+  source "./scripts/lock.sh"
+  source "./scripts/redeem.sh"
 
   case $operation in
     fund-collateral)
