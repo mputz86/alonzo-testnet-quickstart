@@ -26,17 +26,16 @@ fund_collateral() {
 
   # ===================================
   # Wallet utxo selection
-  main_wallet_utxos_sufficient=$(cardano-wallet balance main \
-    | jq --argjson payment "$required_inflow" \
-    'to_entries | map(select(.value.value.lovelace >= $payment))')
-  main_wallet_utxos_sufficient_len=$(echo $main_wallet_utxos_sufficient | jq -r 'length')
+  main_wallet_utxo_sufficient=$(cardano-wallet balance main \
+    | jq --argjson payment "$required_inflow" 'to_entries | map(select(.value.value.lovelace >= $payment))' \
+    | jq 'min_by(.value.value.lovelace)')
   echo Main Wallet: $(cardano-wallet main)
-  echo Main Wallet Sufficient Utxos: $main_wallet_utxos_sufficient_len
-  echo $main_wallet_utxos_sufficient
+  echo Main Wallet Sufficient Utxo:
+  echo $main_wallet_utxo_sufficient
 
   # ===================================
   # Lovelace inflow and outflow
-  inflow=$(echo $main_wallet_utxos_sufficient | jq -r '.[0].value.value.lovelace')
+  inflow=$(echo $main_wallet_utxo_sufficient | jq -r '.value.value.lovelace')
   echo Input Balance: $inflow
 
   amount_change=$(($inflow - $fee - $amount_to_send))
@@ -49,7 +48,7 @@ fund_collateral() {
 
   # ===================================
   # Inputs and outputs
-  tx_in=$(echo $main_wallet_utxos_sufficient | jq -r '.[0].key')
+  tx_in=$(echo $main_wallet_utxo_sufficient | jq -r '.key')
   echo Tx In: $tx_in
 
   tx_in_signing_key=$(cardano-wallet signing-key main)
@@ -81,7 +80,7 @@ fund_collateral() {
       --tx-body-file $tx_file.unsigned \
       --signing-key-file $tx_in_signing_key
 
-    cardano-cli transaction view --tx-file $tx_file.signed | yq > /dev/stdout
+    # cardano-cli transaction view --tx-file $tx_file.signed | yq > /dev/stdout
   fi
 }
 

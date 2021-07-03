@@ -34,14 +34,6 @@ common() {
   echo Datum Hash: $datum_hash
 
   # ===================================
-  # Script utxo selection
-  utxos_with_my_datum=$(balance $(cat $script_address_file) --out-file /dev/stdout \
-    | jq --arg utxo $datum_hash 'to_entries | map(select(.value.data == $utxo))')
-  utxos_with_my_datum_len=$(echo $utxos_with_my_datum | jq -r 'length')
-  echo Utxos with My Datum: $utxos_with_my_datum_len
-  echo $utxos_with_my_datum
-
-  # ===================================
   # Locking cost
   locking_fee=$((250*1000))
   echo Locking fee: $locking_fee

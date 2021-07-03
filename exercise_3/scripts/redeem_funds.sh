@@ -4,7 +4,15 @@
 # Redeem funds from script
 # ===================================
 redeem_funds() {
-  if [ $utxos_with_my_datum_len -eq 0 ]; then
+  # ===================================
+  # Script utxo selection
+  script_utxo_with_my_datum=$(balance $(cat $script_address_file) --out-file /dev/stdout \
+    | jq --arg utxo $datum_hash 'to_entries | map(select(.value.data == $utxo))' \
+    | jq 'max_by(.value.value.lovelace)')
+  echo Script Utxo with My Datum:
+  echo $script_utxo_with_my_datum
+
+  if [ "$script_utxo_with_my_datum" == 'null' ]; then
     echo "No utxos detected with this datum. There is nothing to redeem."
     exit 1
   fi
@@ -21,7 +29,7 @@ redeem_funds() {
   # Lovelace inflow and outflow
   echo Main Wallet: $(cardano-wallet main)
 
-  inflow=$(echo $utxos_with_my_datum | jq -r '.[0].value.value.lovelace')
+  inflow=$(echo $script_utxo_with_my_datum | jq -r '.value.value.lovelace')
   echo Inflow: $inflow
 
   amount_change=$(($inflow - $fee))
@@ -34,25 +42,25 @@ redeem_funds() {
 
   # ===================================
   # Collateral selection
-  utxos_with_sufficient_collateral=$(cardano-wallet balance collateral \
-    | jq --argjson required $collateral_value_required 'to_entries | map(select(.value.value.lovelace >= $required))')
-  utxos_with_sufficient_collateral_len=$(echo $utxos_with_my_datum | jq -r 'length')
-  echo Utxos with Sufficient Collateral: $utxos_with_sufficient_collateral_len
-  echo $utxos_with_sufficient_collateral
+  collateral_utxo_sufficient=$(cardano-wallet balance collateral \
+    | jq --argjson required $collateral_value_required 'to_entries | map(select(.value.value.lovelace >= $required))' \
+    | jq 'min_by(.value.value.lovelace)')
+  echo Utxo with Sufficient Collateral:
+  echo $collateral_utxo_sufficient
 
-  if [ $utxos_with_sufficient_collateral_len -eq 0 ]; then
+  if [ "$collateral_utxo_sufficient" == 'null' ]; then
     echo "No utxos detected with sufficient collateral. Load the collateral wallet with more funds before proceeding."
     exit 1
   fi
 
   # ===================================
   # Inputs and outputs
-  tx_in=$(echo $utxos_with_my_datum | jq -r '.[0].key')
-  tx_in_value=$(echo $utxos_with_my_datum | jq -r '.[0].value.value.lovelace')
+  tx_in=$(echo $script_utxo_with_my_datum | jq -r '.key')
+  tx_in_value=$(echo $script_utxo_with_my_datum | jq -r '.value.value.lovelace')
   echo "Tx In: $tx_in ($tx_in_value)"
 
-  tx_in_collateral=$(echo $utxos_with_sufficient_collateral | jq -r '.[0].key')
-  tx_in_collateral_value=$(echo $utxos_with_sufficient_collateral | jq -r '.[0].value.value.lovelace')
+  tx_in_collateral=$(echo $collateral_utxo_sufficient | jq -r '.key')
+  tx_in_collateral_value=$(echo $collateral_utxo_sufficient | jq -r '.value.value.lovelace')
   echo "Tx In Collateral: $tx_in_collateral ($tx_in_collateral_value)"
 
   tx_in_collateral_signing_key=$(cardano-wallet signing-key collateral)

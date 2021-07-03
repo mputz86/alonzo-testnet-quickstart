@@ -11,13 +11,21 @@ lock_funds() {
 
   echo Amount to Send: $amount_to_send
 
-  if [ $utxos_with_my_datum_len -ne 0 ]; then
-    echo "Utxos detected with this datum. It's better to either redeem them first, or choose another datum."
+  if (( "$amount_to_send" < "$scaled_redemption_cost" )); then
+    echo "Error: Amount to send ($amount_to_send) is insufficient to cover redemption cost ($scaled_redemption_cost)"
     exit 1
   fi
 
-  if (( "$amount_to_send" < "$scaled_redemption_cost" )); then
-    echo "Error: Amount to send ($amount_to_send) is insufficient to cover redemption cost ($scaled_redemption_cost)"
+  # ===================================
+  # Script utxo selection
+  script_utxo_with_my_datum=$(balance $(cat $script_address_file) --out-file /dev/stdout \
+    | jq --arg utxo $datum_hash 'to_entries | map(select(.value.data == $utxo))' \
+    | jq 'max_by(.value.value.lovelace)')
+  echo Script Utxo with My Datum:
+  echo $script_utxo_with_my_datum
+
+  if [ "$script_utxo_with_my_datum" != 'null' ]; then
+    echo "Utxos detected with this datum. It's better to either redeem them first, or choose another datum."
     exit 1
   fi
 
@@ -31,16 +39,16 @@ lock_funds() {
 
   # ===================================
   # Wallet utxo selection
-  main_wallet_utxos_sufficient=$(cardano-wallet balance main \
-    | jq --argjson payment "$required_inflow" 'to_entries | map(select(.value.value.lovelace >= $payment))')
-  main_wallet_utxos_sufficient_len=$(echo $main_wallet_utxos_sufficient | jq -r 'length')
+  main_wallet_utxo_sufficient=$(cardano-wallet balance main \
+    | jq --argjson payment "$required_inflow" 'to_entries | map(select(.value.value.lovelace >= $payment))' \
+    | jq 'min_by(.value.value.lovelace)')
   echo Main Wallet: $(cardano-wallet main)
-  echo Main Wallet Sufficient Utxos: $main_wallet_utxos_sufficient_len
-  echo $main_wallet_utxos_sufficient
+  echo Main Wallet Sufficient Utxo:
+  echo $main_wallet_utxo_sufficient
 
   # ===================================
   # Lovelace inflow and outflow
-  inflow=$(echo $main_wallet_utxos_sufficient | jq -r '.[0].value.value.lovelace')
+  inflow=$(echo $main_wallet_utxo_sufficient | jq -r '.value.value.lovelace')
   echo Input Balance: $inflow
 
   amount_change=$(($inflow - $fee - $amount_to_send))
@@ -53,7 +61,7 @@ lock_funds() {
 
   # ===================================
   # Inputs and outputs
-  tx_in=$(echo $main_wallet_utxos_sufficient | jq -r '.[0].key')
+  tx_in=$(echo $main_wallet_utxo_sufficient | jq -r '.key')
   echo Tx In: $tx_in
 
   tx_in_signing_key=$(cardano-wallet signing-key main)
