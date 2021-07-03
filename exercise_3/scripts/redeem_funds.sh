@@ -68,6 +68,16 @@ redeem_funds() {
     exit 1
   fi
 
+  excess_collateral_percentage=$((100 * $(echo $collateral_utxo_sufficient | jq '.value.value.lovelace') / $collateral_value_required - 100))
+  if (( $excess_collateral_percentage > 400 )); then
+    echo "The collateral utxo contains +$excess_collateral_percentage% more value than required for this transaction."
+    read -p "Are you sure you want to use this collateral utxo (y/n)? " -n 1 -r approve_collateral
+    echo ""
+    if [[ ! $approve_collateral =~ ^[Yy]$ ]]; then
+      exit 1
+    fi
+  fi
+
   # ===================================
   # Inputs and outputs
   tx_in_main=$(echo $main_wallet_utxo_sufficient | jq -r '.key')

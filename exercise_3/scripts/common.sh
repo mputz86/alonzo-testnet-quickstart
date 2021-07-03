@@ -106,9 +106,9 @@ get_tx_expiry_slot() {
 # ===================================
 submit() {
   if [ -f $tx_file.signed ]; then
-    read -p "Are you sure you want to submit this transaction (y/n)? " -n 1 -r confirmation
+    read -p "Are you sure you want to submit this transaction (y/n)? " -n 1 -r approve_submit
     echo ""
-    if [[ $confirmation =~ ^[Yy]$ ]]; then
+    if [[ $approve_submit =~ ^[Yy]$ ]]; then
       touch $tx_file.submitted
       cardano-cli transaction submit --testnet-magic 5 --tx-file $tx_file.signed
     fi
