@@ -84,7 +84,5 @@ fund_collateral() {
       --out-file $tx_file.signed \
       --tx-body-file $tx_file.unsigned \
       --signing-key-file $tx_in_signing_key
-
-    # cardano-cli transaction view --tx-file $tx_file.signed | yq > /dev/stdout
   fi
 }

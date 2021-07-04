@@ -6,7 +6,6 @@ This project has been developed/tested on a Linux system, and it requires the fo
 - [direnv](https://direnv.net/)
 - [nix](https://nixos.org/guides/install-nix.html)
 - [jq](https://stedolan.github.io/jq/)
-- [yq](https://kislyuk.github.io/yq/)
 
 ## Setup
 Clone this repository and enter the resulting directory.
