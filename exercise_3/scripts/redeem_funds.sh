@@ -121,8 +121,8 @@ redeem_funds() {
     --tx-in $tx_in_main \
     --tx-in $tx_in_script \
     --tx-in-script-file $script_file \
-    --tx-in-datum-value $datum \
-    --tx-in-redeemer-value $datum \
+    --tx-in-datum-value "$datum" \
+    --tx-in-redeemer-value "$datum" \
     --tx-in-execution-units "$execution_units" \
     --tx-in-collateral $tx_in_collateral \
     --tx-out $tx_out_change

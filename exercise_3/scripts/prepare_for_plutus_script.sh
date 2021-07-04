@@ -26,8 +26,8 @@ prepare_for_plutus_script() {
   fi
 
   datum=$(cat datum.txt)
-  datum_hash=$(cardano-cli transaction hash-script-data --script-data-value $datum)
   echo Datum: $datum
+  datum_hash=$(cardano-cli transaction hash-script-data --script-data-value "$datum")
   echo Datum Hash: $datum_hash
 
   # ===================================
