@@ -29,7 +29,7 @@ A few adjustments to the exercise 4 (numeric validator) files were required to a
 - Replace the the numeric datum `123` with the text datum `"Hello World!"`.
 - Replace the `helloworld-numeric.plutus` compiled+serialized validator with `helloworld-bytestring.plutus`.
 - Modify the `$script_file` reference in `scripts/prepare_for_plutus_script.sh`.
-- Increase the `$scalar_factor` from 20 to 40. This scalar factor is used to multiplicative scale up the (Steps, Memory) units defined in `helloworld-bytestring.plutus.budget.json`, which the compiler calculated for the script. (Not sure why the compiler's calculated units are not sufficient and have to be scaled up, in the first place...)
+- Increase the `$scalar_factor` from 20 to 40. This scalar factor is used to multiplicatively scale up the (Steps, Memory) units defined in `helloworld-bytestring.plutus.budget.json`, which the compiler calculated for the script. (Not sure why the compiler's calculated units are not sufficient and have to be scaled up, in the first place...)
 
 ```diff
 [user@machine exercise_4_helloworld_bytestring]$ iff -r -x 'transaction*' -x 'README*' ../exercise_4_helloworld_numeric/ ./
