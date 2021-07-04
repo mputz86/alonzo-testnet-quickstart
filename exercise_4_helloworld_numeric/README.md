@@ -63,8 +63,8 @@ Check whether the funds arrived in the collateral wallet:
 [user@machine exercise_4_helloworld_numeric]$ watch -n 10 cardano-wallet balance collateral
 ```
 
-## Lock funds under the script
-Lock some funds under the `plutus-always-succeeds.plutus` script:
+## Lock funds under the validator script
+Lock some funds under the validator script:
 ```
 [user@machine exercise_4_helloworld_numeric]$ ./main.sh lock-funds $((1000*1000*1000))
 ...
@@ -84,8 +84,8 @@ If there are funds already locked under the script with your datum, the `lock-fu
 Utxos detected with this datum. It's better to either redeem them first, or choose another datum.
 ```
 
-## Redeem funds from the script
-Redeem the funds under the `plutus-always-succeeds.plutus` script:
+## Redeem funds from the validator script
+Redeem the funds under the validator script:
 ```
 [user@machine exercise_4_helloworld_numeric]$ ./main.sh redeem-funds
 ...

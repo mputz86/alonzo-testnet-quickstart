@@ -42,7 +42,7 @@ Check whether the funds arrived in the collateral wallet:
 ```
 
 ## Lock funds under the script
-Lock some funds under the `plutus-always-succeeds.plutus` script:
+Lock some funds under the validator:
 ```
 [user@machine exercise_3]$ ./main.sh lock-funds $((1000*1000*1000))
 ...
@@ -63,7 +63,7 @@ Utxos detected with this datum. It's better to either redeem them first, or choo
 ```
 
 ## Redeem funds from the script
-Redeem the funds under the `plutus-always-succeeds.plutus` script:
+Redeem the funds under the validator:
 ```
 [user@machine exercise_3]$ ./main.sh redeem-funds
 ...

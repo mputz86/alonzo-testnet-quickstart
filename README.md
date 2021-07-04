@@ -42,7 +42,7 @@ Open another terminal tab to monitor the node. For example, if you have the [lna
 ## Cardano-wallet utility
 The helper script `scripts/cardano-wallet` makes it easier to manage several "wallets" (a wallet includes an address, a payment skey/vkey pair, and a staking skey/vkey pair).
 
-These credentials for each wallet are stored in respective subfolders under `./wallet`, which is ignored by git during commits.
+These credentials for each wallet are stored in respective subfolders under `./wallet`, which is ignored by git commits.
 
 Usage:
 ```
