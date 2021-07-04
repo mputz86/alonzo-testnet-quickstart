@@ -143,5 +143,5 @@ This validator has been compiled and serialized and saved at [./exercise_4_hello
 
 As with the previous exercise, the trick with this exercise is making sure that the datum-hash you provide when locking funds under the validator matches the datum that you provide when redeeming funds from the validator. Also, the datum needs to be `"Hello World!"`.
 
-More info: [./exercise_4_helloworld_bytestring/README.md](./exercise_4_helloworld_numeric/README.md).
+More info: [./exercise_4_helloworld_bytestring/README.md](./exercise_4_helloworld_bytestring/README.md).
 
