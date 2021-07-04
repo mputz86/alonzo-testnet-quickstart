@@ -116,3 +116,32 @@ This validator has been compiled and serialized and saved at [./exercise_4_hello
 As with the previous exercise, the trick with this exercise is making sure that the datum-hash you provide when locking funds under the validator matches the datum that you provide when redeeming funds from the validator. Also, the datum needs to be `123`.
 
 More info: [./exercise_4_helloworld_numeric/README.md](./exercise_4_helloworld_numeric/README.md).
+
+## Exercise 4: Helloworld bytestring
+In this exercise, you are asked to interact with a slightly more complicated on-chain validator, which succeeds if it is provided with a text datum `"Hello World!"`, ignoring the redeemer and transaction context. For various technical reasons, this validator had to be written in parametric form, where the keyword to which the datum is compared is passed in as an additional argument.
+```haskell
+hello :: P.ByteString
+hello = "Hello World!"
+
+helloWorld :: P.ByteString -> P.ByteString -> P.ByteString -> ScriptContext -> P.Bool
+helloWorld keyword datum _ _ = keyword P.== datum
+
+data HelloWorld
+instance Scripts.ScriptType HelloWorld where
+    type instance DatumType HelloWorld = P.ByteString
+    type instance RedeemerType HelloWorld = P.ByteString
+
+helloWorldInstance :: Scripts.ScriptInstance HelloWorld
+helloWorldInstance = Scripts.validator @HelloWorld
+    ($$(PlutusTx.compile [|| helloWorld ||]) `PlutusTx.applyCode` PlutusTx.liftCode hello)
+    $$(PlutusTx.compile [|| wrap ||])
+  where
+    wrap = Scripts.wrapValidator @P.ByteString @P.ByteString
+```
+
+This validator has been compiled and serialized and saved at [./exercise_4_helloworld_bytestring/plutus/helloworld-bytestring.plutus](./exercise_4_helloworld_bytestring/plutus/helloworld-bytestring.plutus).
+
+As with the previous exercise, the trick with this exercise is making sure that the datum-hash you provide when locking funds under the validator matches the datum that you provide when redeeming funds from the validator. Also, the datum needs to be `"Hello World!"`.
+
+More info: [./exercise_4_helloworld_bytestring/README.md](./exercise_4_helloworld_numeric/README.md).
+
