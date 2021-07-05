@@ -50,7 +50,7 @@ diff -r -x 'transaction*' -x 'README*' ../exercise_4_helloworld_numeric/scripts/
 54c54
 <   scalar_factor=20
 ---
->   scalar_factor=40
+>   scalar_factor=30
 ```
 
 ## Setup for the exercise
@@ -70,7 +70,7 @@ Ensure that the passive node is running ([../README.md#run-and-monitor-a-passive
 ## Fund a sufficient utxo for collateral
 Send some funds to the 'collateral' wallet, which will provide collateral utxos for transactions that consume script-guarded utxos:
 ```
-[user@machine exercise_4_helloworld_bytestring]$ ./main.sh fund-collateral $((44*1000*1000))
+[user@machine exercise_4_helloworld_bytestring]$ ./main.sh fund-collateral $((33*1000*1000))
 ...
 Are you sure you want to submit this transaction (y/n)? y
 ```
@@ -83,7 +83,7 @@ Check whether the funds arrived in the collateral wallet:
 ## Lock funds under the validator script
 Lock some funds under the validator script:
 ```
-[user@machine exercise_4_helloworld_bytestring]$ ./main.sh lock-funds $((2200*1000*1000))
+[user@machine exercise_4_helloworld_bytestring]$ ./main.sh lock-funds $((1650*1000*1000))
 ...
 Are you sure you want to submit this transaction (y/n)? y
 ```
@@ -96,7 +96,7 @@ Check whether the funds arrived at the script address:
 
 If there are funds already locked under the script with your datum, the `lock-funds` operation will ask you to redeem them first:
 ```
-[user@machine exercise_4_helloworld_bytestring]$ ./main.sh lock-funds $((2200*1000*1000))
+[user@machine exercise_4_helloworld_bytestring]$ ./main.sh lock-funds $((1650*1000*1000))
 ...
 Utxos detected with this datum. It's better to either redeem them first, or choose another datum.
 ```

@@ -51,7 +51,7 @@ prepare_for_plutus_script() {
   min_redemption_cost=$(($min_execution_cost + $fixed_cost))
   echo Minimum Cost to Redeem: $min_redemption_cost
 
-  scalar_factor=40
+  scalar_factor=30
   scaled_execution_units=$(echo $min_execution_units | jq --argjson factor $scalar_factor 'map_values(. * $factor)')
   scaled_execution_cost=$(($min_redemption_cost * $scalar_factor))
   scaled_redemption_cost=$(($scaled_execution_cost + $fixed_cost))
