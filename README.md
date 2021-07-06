@@ -1,4 +1,4 @@
-# Alonzo testnet starting kit
+# Alonzo testnet quickstart
 This repository is intended to help people get started quickly with the Alonzo Blue testnet. In particular, it contains some fairly robust and convenient scripts that implement some of the testnet exercises.
 
 ## Prerequisites
