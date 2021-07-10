@@ -8,6 +8,8 @@ This project has been developed/tested on a Linux system, and it requires the fo
 - [jq](https://stedolan.github.io/jq/)
 
 ## Setup
+** WARNING: These setup instructions do not work for Alonzo White, which require a different configuration. A fix is in progress. **
+
 Clone this repository and enter the resulting directory.
 
 Take a look at the `.envrc` file to see what environment variables and path it sets up. Enable direnv: 
