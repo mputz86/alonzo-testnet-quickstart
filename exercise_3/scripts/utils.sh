@@ -32,6 +32,8 @@ clean_tx_log() {
 }
 
 setup_tx_file() {
+  [ -d "./tx/" ] || mkdir "./tx/"
+
   tx_name="transaction_$(date +'%Y-%m-%d_%T')_$operation"
 
   tx_file="./tx/$tx_name"
