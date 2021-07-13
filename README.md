@@ -1,5 +1,5 @@
 # Alonzo testnet quickstart
-This repository is intended to help people get started quickly with the Alonzo Blue testnet. In particular, it contains some fairly robust and convenient scripts that implement some of the testnet exercises.
+This repository is intended to help people get started quickly with the Alonzo White testnet. In particular, it contains some fairly robust and convenient scripts that implement some of the testnet exercises.
 
 ## Prerequisites
 This project has been developed/tested on a Linux system, and it requires the following utilities:
@@ -8,7 +8,6 @@ This project has been developed/tested on a Linux system, and it requires the fo
 - [jq](https://stedolan.github.io/jq/)
 
 ## Setup
-** WARNING: These setup instructions do not work for Alonzo White, which require a different configuration. A fix is in progress. **
 
 Clone this repository and enter the resulting directory.
 
@@ -32,7 +31,7 @@ Install cardano-node and cardano-cli (using nix):
 ## Run and monitor a passive cardano node
 Start cardano node:
 ```
-[user@machine alonzo-testnet]$ cd $NODE_HOME && cardano-node-alonzo-blue 1>&2> node.log
+[user@machine alonzo-testnet]$ cd $NODE_HOME && cardano-node-alonzo-white 1>&2> node.log
 ```
 
 Open another terminal tab to monitor the node. For example, if you have the [lnav](https://lnav.org/) utility installed:
