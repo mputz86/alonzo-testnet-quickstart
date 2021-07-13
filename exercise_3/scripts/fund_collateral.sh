@@ -12,11 +12,6 @@ fund_collateral() {
 
   echo Amount to Send: $amount_to_send
 
-  if (( "$amount_to_send" < "$collateral_value_required" )); then
-    echo "Error: Amount to send ($amount_to_send) is insufficient to cover redemption collateral ($collateral_value_required)"
-    exit 1
-  fi
-
   # ===================================
   # Fee
   fee=$((200*1000))
@@ -69,7 +64,7 @@ fund_collateral() {
   get_tx_expiry_slot $((5 * 60))
   echo Tx Expiry Slot: $tx_expiry_slot
 
-  cardano-cli query protocol-parameters --testnet-magic 5 --out-file $tx_file.params
+  cardano-cli query protocol-parameters --testnet-magic 7 --out-file $tx_file.params
 
   cardano-cli transaction build-raw --mary-era \
     --out-file $tx_file.unsigned \
@@ -80,7 +75,7 @@ fund_collateral() {
     --tx-out $tx_out_payment
 
   if [ -f $tx_file.unsigned ]; then
-    cardano-cli transaction sign --testnet-magic 5 \
+    cardano-cli transaction sign --testnet-magic 7 \
       --out-file $tx_file.signed \
       --tx-body-file $tx_file.unsigned \
       --signing-key-file $tx_in_signing_key

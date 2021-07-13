@@ -15,8 +15,8 @@ cd $NODE_HOME
 git clone https://github.com/input-output-hk/cardano-node .cardano-node
 
 cd .cardano-node
-git checkout tags/alonzo-blue2.0 -b alonzo-blue2_0
-nix-build -A scripts.alonzo-blue.node -o ../bin/cardano-node-alonzo-blue
+git checkout tags/alonzo-white-1.0 -b alonzo-white-1.0
+nix-build -A scripts.alonzo-white.node -o ../bin/cardano-node-alonzo-white
 nix-build -A cardano-cli -o ../bin/cardano-cli
 
 cd ..

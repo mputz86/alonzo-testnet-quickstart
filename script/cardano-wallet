@@ -50,7 +50,7 @@ main() {
     address-script)
       validate_script_file
 
-      cardano-cli address build --payment-script-file $script_file --testnet-magic 5 --out-file /dev/stdout
+      cardano-cli address build --payment-script-file $script_file --testnet-magic 7 --out-file /dev/stdout
       ;;
     balance)
       validate_wallet_id
@@ -63,13 +63,13 @@ main() {
       fi
 
       wallet_address=$(cat $wallet_address_file)
-      cardano-cli query utxo --address $wallet_address --testnet-magic 5 --out-file /dev/stdout
+      cardano-cli query utxo --address $wallet_address --testnet-magic 7 --out-file /dev/stdout
       ;;
     balance-script)
       validate_script_file
 
-      script_address=$(cardano-cli address build --payment-script-file $script_file --testnet-magic 5 --out-file /dev/stdout)
-      cardano-cli query utxo --address $script_address --testnet-magic 5 --out-file /dev/stdout
+      script_address=$(cardano-cli address build --payment-script-file $script_file --testnet-magic 7 --out-file /dev/stdout)
+      cardano-cli query utxo --address $script_address --testnet-magic 7 --out-file /dev/stdout
       ;;
     create)
       validate_wallet_id
@@ -93,14 +93,14 @@ main() {
       cardano-cli stake-address build \
         --stake-verification-key-file stake.vkey \
         --out-file stake.addr \
-        --testnet-magic 5
+        --testnet-magic 7
 
       # Create payment address
       cardano-cli address build \
         --payment-verification-key-file payment.vkey \
         --stake-verification-key-file stake.vkey \
         --out-file payment.addr \
-        --testnet-magic 5
+        --testnet-magic 7
       ;;
    remove)
       validate_wallet_id
