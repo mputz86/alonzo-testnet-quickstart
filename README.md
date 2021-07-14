@@ -1,3 +1,5 @@
+NOTE: The CLI/plutus scripts in this repo have been confirmed to work on Alonzo Blue, but not yet on Alonzo White.
+
 # Alonzo testnet quickstart
 This repository is intended to help people get started quickly with the Alonzo White testnet. In particular, it contains some fairly robust and convenient scripts that implement some of the testnet exercises.
 
