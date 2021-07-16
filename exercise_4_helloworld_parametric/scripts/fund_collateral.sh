@@ -12,11 +12,6 @@ fund_collateral() {
 
   echo Amount to Send: $amount_to_send
 
-  if (( "$amount_to_send" < "$collateral_value_required" )); then
-    echo "Error: Amount to send ($amount_to_send) is insufficient to cover redemption collateral ($collateral_value_required)"
-    exit 1
-  fi
-
   # ===================================
   # Fee
   fee=$((200*1000))

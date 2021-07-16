@@ -15,8 +15,7 @@ main() {
 
   case $operation in
     fund-collateral)
-      prepare_for_plutus_script \
-        && fund_collateral \
+      fund_collateral \
         && submit
       ;;
     withdraw-collateral)
