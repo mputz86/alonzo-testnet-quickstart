@@ -25,7 +25,7 @@ This validator has been compiled and serialized and saved at [./plutus/helloworl
 
 As with the previous exercise, the trick with this exercise is making sure that the datum-hash you provide when locking funds under the validator matches the datum that you provide when redeeming funds from the validator. Also, the datum needs to be `"Hello World!"`.
 
-## Difference from Exercise 4 (Helloworld Numeric)
+## Difference from Exercise 3
 A few adjustments to the exercise 3 files were required to adapt them to this exercise:
 - Replace the the random datum with the specific text datum `"Hello World!"`.
 - Replace the `untyped-always-succeeds-txin.plutus` compiled+serialized validator with `helloworld-parametric.plutus`.
