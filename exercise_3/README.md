@@ -31,7 +31,7 @@ Ensure that the passive node is running ([../README.md#run-and-monitor-a-passive
 ## Fund a sufficient utxo for collateral
 Send some funds to the 'collateral' wallet, which will provide collateral utxos for transactions that consume script-guarded utxos:
 ```
-[user@machine exercise_3]$ ./main.sh fund-collateral $((10*1000*1000))
+[user@machine exercise_3]$ ./main.sh fund-collateral $((3*1000*1000))
 ...
 Are you sure you want to submit this transaction (y/n)? y
 ```
@@ -44,7 +44,7 @@ Check whether the funds arrived in the collateral wallet:
 ## Lock funds under the validator script
 Lock some funds under the validator script:
 ```
-[user@machine exercise_3]$ ./main.sh lock-funds $((1000*1000*1000))
+[user@machine exercise_3]$ ./main.sh lock-funds $((120*1000*1000))
 ...
 Are you sure you want to submit this transaction (y/n)? y
 ```
@@ -57,7 +57,7 @@ Check whether the funds arrived at the script address:
 
 If there are funds already locked under the script with your datum, the `lock-funds` operation will ask you to redeem them first:
 ```
-[user@machine exercise_3]$ ./main.sh lock-funds $((1000*1000*1000))
+[user@machine exercise_3]$ ./main.sh lock-funds $((120*1000*1000))
 ...
 Utxos detected with this datum. It's better to either redeem them first, or choose another datum.
 ```
@@ -75,11 +75,22 @@ Check whether the funds arrived in the main wallet:
 [user@machine exercise_3]$ watch -n 10 cardano-wallet balance main
 ```
 
+Alternatively, you can check whether the funds left the script address:
+```
+[user@machine exercise_3]$ watch -n 10 "cardano-wallet balance-script ./plutus/untyped-always-succeeds-txin.plutus \
+  | jq 'map_values(select(.data != null) | {lovelace: .value.lovelace, data: .data})'"
+```
+
 If there are no funds locked under the script with your datum, then `redeem-funds` operation will let you know that there is nothing to redeem.
 ```
 [user@machine exercise_3]$ ./main.sh redeem-funds
 ...
 No utxos detected with this datum. There is nothing to redeem.
+```
+
+Double-check that you didn't lose your collateral utxo:
+```
+[user@machine exercise_3]$ cardano-wallet balance collateral
 ```
 
 ## Clean-up

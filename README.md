@@ -1,5 +1,3 @@
-NOTE: The CLI/plutus scripts in this repo have been confirmed to work on Alonzo Blue, but not yet on Alonzo White.
-
 # Alonzo testnet quickstart
 This repository is intended to help people get started quickly with the Alonzo White testnet. In particular, it contains some fairly robust and convenient scripts that implement some of the testnet exercises.
 
@@ -103,47 +101,32 @@ The trick with this exercise is making sure that the datum-hash you provide when
 
 More info: [./exercise_3/README.md](./exercise_3/README.md).
 
-## Exercise 4: Helloworld numeric
-In this exercise, you are asked to interact with a slightly less trivial on-chain validator, which succeeds if it is provided with an integer datum `123`, ignoring the redeemer and transaction context:
-```haskell
-hello :: Data
-hello = I 123
-
-helloWorld :: Data -> Data -> Data -> ()
-helloWorld datum _ _ = if datum P.== hello then () else (P.error ())
-```
-
-This validator has been compiled and serialized and saved at [./exercise_4_helloworld_numeric/plutus/helloworld-numeric.plutus](./exercise_4_helloworld_numeric/plutus/helloworld-numeric.plutus).
-
-As with the previous exercise, the trick with this exercise is making sure that the datum-hash you provide when locking funds under the validator matches the datum that you provide when redeeming funds from the validator. Also, the datum needs to be `123`.
-
-More info: [./exercise_4_helloworld_numeric/README.md](./exercise_4_helloworld_numeric/README.md).
-
-## Exercise 4: Helloworld bytestring
+## Exercise 4: Helloworld parametric
 In this exercise, you are asked to interact with a slightly more complicated on-chain validator, which succeeds if it is provided with a text datum `"Hello World!"`, ignoring the redeemer and transaction context. For various technical reasons, this validator had to be written in parametric form, where the keyword to which the datum is compared is passed in as an additional argument.
 ```haskell
 hello :: P.ByteString
 hello = "Hello World!"
 
+{-# INLINABLE helloWorld #-}
 helloWorld :: P.ByteString -> P.ByteString -> P.ByteString -> ScriptContext -> P.Bool
-helloWorld keyword datum _ _ = keyword P.== datum
+helloWorld keyword datum redeemer context = keyword P.== datum
 
 data HelloWorld
-instance Scripts.ScriptType HelloWorld where
+instance Scripts.ValidatorTypes HelloWorld where
     type instance DatumType HelloWorld = P.ByteString
     type instance RedeemerType HelloWorld = P.ByteString
 
-helloWorldInstance :: Scripts.ScriptInstance HelloWorld
-helloWorldInstance = Scripts.validator @HelloWorld
+helloWorldInstance :: Scripts.TypedValidator HelloWorld
+helloWorldInstance = Scripts.mkTypedValidator @HelloWorld
     ($$(PlutusTx.compile [|| helloWorld ||]) `PlutusTx.applyCode` PlutusTx.liftCode hello)
     $$(PlutusTx.compile [|| wrap ||])
   where
     wrap = Scripts.wrapValidator @P.ByteString @P.ByteString
 ```
 
-This validator has been compiled and serialized and saved at [./exercise_4_helloworld_bytestring/plutus/helloworld-bytestring.plutus](./exercise_4_helloworld_bytestring/plutus/helloworld-bytestring.plutus).
+This validator has been compiled and serialized and saved at [./exercise_4_helloworld_parametric/plutus/helloworld-parametric.plutus](./exercise_4_helloworld_parametric/plutus/helloworld-parametric.plutus).
 
 As with the previous exercise, the trick with this exercise is making sure that the datum-hash you provide when locking funds under the validator matches the datum that you provide when redeeming funds from the validator. Also, the datum needs to be `"Hello World!"`.
 
-More info: [./exercise_4_helloworld_bytestring/README.md](./exercise_4_helloworld_bytestring/README.md).
+More info: [./exercise_4_helloworld_parametric/README.md](./exercise_4_helloworld_parametric/README.md).
 
