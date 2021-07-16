@@ -5,7 +5,7 @@ validator :: Data -> Data -> Data -> ()
 validator _ _ _ = ()
 ```
 
-This validator has been compiled and serialized and saved at [./plutus/untyped-always-succeeds-txin.plutus](./plutus/untyped-always-succeeds-txin.plutus).
+This validator has been compiled and serialized and saved at [./plutus/always-succeeds.plutus](./plutus/always-succeeds.plutus).
 
 The trick with this exercise is making sure that the datum-hash you provide when locking funds under the validator matches the datum that you provide when redeeming funds from the validator.
 
@@ -51,7 +51,7 @@ Are you sure you want to submit this transaction (y/n)? y
 
 Check whether the funds arrived at the script address:
 ```
-[user@machine exercise_3]$ watch -n 10 "cardano-wallet balance-script ./plutus/untyped-always-succeeds-txin.plutus \
+[user@machine exercise_3]$ watch -n 10 "cardano-wallet balance-script ./plutus/always-succeeds.plutus \
   | jq 'map_values(select(.data != null) | {lovelace: .value.lovelace, data: .data})'"
 ```
 
@@ -77,7 +77,7 @@ Check whether the funds arrived in the main wallet:
 
 Alternatively, you can check whether the funds left the script address:
 ```
-[user@machine exercise_3]$ watch -n 10 "cardano-wallet balance-script ./plutus/untyped-always-succeeds-txin.plutus \
+[user@machine exercise_3]$ watch -n 10 "cardano-wallet balance-script ./plutus/always-succeeds.plutus \
   | jq 'map_values(select(.data != null) | {lovelace: .value.lovelace, data: .data})'"
 ```
 

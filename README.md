@@ -95,7 +95,7 @@ validator :: Data -> Data -> Data -> ()
 validator _ _ _ = ()
 ```
 
-This validator has been compiled and serialized and saved at [./exercise_3/plutus/untyped-always-succeeds-txin.plutus](./exercise_3/plutus/untyped-always-succeeds-txin.plutus).
+This validator has been compiled and serialized and saved at [./exercise_3/plutus/always-succeeds.plutus](./exercise_3/plutus/always-succeeds.plutus).
 
 The trick with this exercise is making sure that the datum-hash you provide when locking funds under the validator matches the datum that you provide when redeeming funds from the validator.
 
