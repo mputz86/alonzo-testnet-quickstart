@@ -6,7 +6,7 @@
 prepare_for_plutus_script() {
   # ===================================
   # Script and datum
-  script_file="./plutus/helloworld-bytestring.plutus"
+  script_file="./plutus/helloworld-parametric.plutus"
   script_budget_file="$script_file.budget.json"
   if [ ! -f "$script_file" ] || [ ! -f "$script_budget_file" ]; then
     echo "Script files do not exist!"
@@ -46,7 +46,7 @@ prepare_for_plutus_script() {
     --argjson fixed_cost $fixed_cost \
     --argjson prices "$(cardano-cli query protocol-parameters --testnet-magic 7 | jq '.executionUnitPrices')" \
     --argjson budget "$min_execution_units" \
-    '{"Steps": ($prices.priceSteps * $budget.Steps), "Memory": ($prices.priceMemory * $budget.Memory)} | add')
+    '{"Steps": (($prices.priceSteps.numerator / $prices.priceSteps.denominator) * $budget.Steps), "Memory": (($prices.priceMemory.numerator / $prices.priceMemory.denominator) * $budget.Memory)} | add')
 
   min_redemption_cost=$(($min_execution_cost + $fixed_cost))
   echo Minimum Cost to Redeem: $min_redemption_cost
