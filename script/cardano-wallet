@@ -81,6 +81,7 @@ main() {
           style_ada="\e[1m"
           style_reset="\e[0m"
       fi
+      echo "Wallet: ${wallet_id}"
       echo -e "${style_ada}${amount_ada_formatted}${style_reset}.${amount_lovelace_formatted} Ada"
       if (( "$utxo_count" > 0 )); then
         echo "${utxo_count} UTxO:"
@@ -109,6 +110,7 @@ main() {
           style_ada="\e[1m"
           style_reset="\e[0m"
       fi
+      echo "Script: ${script_file}"
       echo -e "${style_ada}${amount_ada_formatted}${style_reset}.${amount_lovelace_formatted} Ada"
       if (( "$utxo_count" > 0 )); then
         echo "${utxo_count} UTxO:"
