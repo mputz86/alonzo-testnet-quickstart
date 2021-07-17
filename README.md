@@ -31,7 +31,7 @@ Install cardano-node and cardano-cli (using nix):
 ## Run and monitor a passive cardano node
 Start cardano node:
 ```
-[user@machine alonzo-testnet]$ cd $NODE_HOME && cardano-node-alonzo-white 1>&2> node.log
+[user@machine alonzo-testnet]$ cd $NODE_HOME && cardano-node-alonzo-white &> node.log
 ```
 
 Open another terminal tab to monitor the node. For example, if you have the [lnav](https://lnav.org/) utility installed:
