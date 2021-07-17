@@ -57,7 +57,7 @@ diff -r -x 'transaction*' -x 'README*' ../exercise_3/scripts/prepare_for_plutus_
 ## Setup for the exercise
 Ensure that the passive node is running ([../README.md#run-and-monitor-a-passive-cardano-node](../README.md#run-and-monitor-a-passive-cardano-node))and that the main address has funds before proceeding ([../README.md#wallet-setup-for-exercises](../README.md#wallet-setup-for-exercises)):
 ```
-[user@machine exercise_4_helloworld_parametric]$ cardano-wallet balance main
+[user@machine exercise_4_helloworld_parametric]$ cardano-wallet utxos main
 {
    "...#...": {
      "address": "addr_test....",
@@ -78,7 +78,7 @@ Are you sure you want to submit this transaction (y/n)? y
 
 Check whether the funds arrived in the collateral wallet:
 ```
-[user@machine exercise_4_helloworld_parametric]$ watch -n 10 cardano-wallet balance collateral
+[user@machine exercise_4_helloworld_parametric]$ watch -n 10 cardano-wallet utxos collateral
 ```
 
 ## Lock funds under the validator script
@@ -91,7 +91,7 @@ Are you sure you want to submit this transaction (y/n)? y
 
 Check whether the funds arrived at the script address:
 ```
-[user@machine exercise_4_helloworld_parametric]$ watch -n 10 "cardano-wallet balance-script ./plutus/helloworld-parametric.plutus \
+[user@machine exercise_4_helloworld_parametric]$ watch -n 10 "cardano-wallet utxos-script ./plutus/helloworld-parametric.plutus \
   | jq 'map_values(select(.data != null) | {lovelace: .value.lovelace, data: .data})'"
 ```
 
@@ -112,12 +112,12 @@ Are you sure you want to submit this transaction (y/n)? y
 
 Check whether the funds arrived in the main wallet:
 ```
-[user@machine exercise_4_helloworld_parametric]$ watch -n 10 cardano-wallet balance main
+[user@machine exercise_4_helloworld_parametric]$ watch -n 10 cardano-wallet utxos main
 ```
 
 Note that since everyone is using the same datum with this script, there may still be some funds locked under the script that you can redeem with your datum. Please be respectful to others. You can check the utxos under the script address as follows:
 ```
-[user@machine exercise_4_helloworld_parametric]$ cardano-wallet balance-script ./plutus/helloworld-parametric.plutus \
+[user@machine exercise_4_helloworld_parametric]$ cardano-wallet utxos-script ./plutus/helloworld-parametric.plutus \
   | jq 'map_values(select(.data != null) | {lovelace: .value.lovelace, data: .data})'
 ```
 
@@ -130,7 +130,7 @@ No utxos detected with this datum. There is nothing to redeem.
 
 Double-check that you didn't lose your collateral utxo:
 ```
-[user@machine exercise_4_helloworld_parametric]$ cardano-wallet balance collateral
+[user@machine exercise_4_helloworld_parametric]$ cardano-wallet utxos collateral
 ```
 
 ## Clean-up

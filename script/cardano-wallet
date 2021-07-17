@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 # ====================================================================
 # Main logic of the script
@@ -63,9 +63,49 @@ main() {
       fi
 
       wallet_address=$(cat $wallet_address_file)
-      cardano-cli query utxo --address $wallet_address --testnet-magic 7 --out-file /dev/stdout
+      # cardano-cli query utxo --address $wallet_address --testnet-magic 7 | jq '[.[]] | .value.lovelace | add'
+      utxos=$(cardano-cli query utxo --address $wallet_address --testnet-magic 7 --out-file /dev/stdout)
+      amount_lovelace_total=$(echo $utxos | jq '[.[] | .value.lovelace] | add')
+      amount_lovelace_total_formatted=$(echo $amount_lovelace_total | sed -r ':L;s=\b([0-9]+)([0-9]{3})\b=\1'\''\2=g;t L')
+      amount_ada=$(($amount_lovelace_total / 1000000))
+      amount_ada_formatted=$(echo $amount_ada | sed -r ':L;s=\b([0-9]+)([0-9]{3})\b=\1'\''\2=g;t L')
+      amount_lovelace=$(($amount_lovelace_total % 1000000))
+      amount_lovelace_formatted=$(printf "%06d" $amount_lovelace)
+      utxo_count=$(echo $utxos | jq '[.[]] | map(1) | add')
+      utxos=$(echo $utxos | jq 'keys')
+
+      style_ada=""
+      style_reset=""
+      if [[ $COLORTERM =~ ^(truecolor|24bit)$ ]]; then
+          style_ada="\e[1m"
+          style_reset="\e[0m"
+      fi
+      echo -e "${style_ada}${amount_ada_formatted}${style_reset}.${amount_lovelace_formatted} Ada"
+      echo "${utxo_count} UTxOs"
+      echo "${utxos}"
+
+      # cardano-cli query utxo --address $wallet_address --testnet-magic 7 --out-file /dev/stdout | jq '[.[] | .value.lovelace] | add' | sed -r ':L;s=\b([0-9]+)([0-9]{3})\b=\1 \2=g;t L'
       ;;
     balance-script)
+      validate_script_file
+
+      script_address=$(cardano-cli address build --payment-script-file $script_file --testnet-magic 7 --out-file /dev/stdout)
+      cardano-cli query utxo --address $script_address --testnet-magic 7 --out-file /dev/stdout | jq '[.[] | .value.lovelace] | add' | sed -r ':L;s=\b([0-9]+)([0-9]{3})\b=\1 \2=g;t L'
+      ;;
+    utxos)
+      validate_wallet_id
+      validate_wallet_dir
+
+      wallet_address_file="$wallet_dir/payment.addr"
+      if [ ! -f $wallet_address_file ]; then
+        echoerr "Address file for wallet $wallet_id doesn't exist at $wallet_address_file"
+        exit 1
+      fi
+
+      wallet_address=$(cat $wallet_address_file)
+      cardano-cli query utxo --address $wallet_address --testnet-magic 7 --out-file /dev/stdout
+      ;;
+    utxos-script)
       validate_script_file
 
       script_address=$(cardano-cli address build --payment-script-file $script_file --testnet-magic 7 --out-file /dev/stdout)
@@ -208,6 +248,14 @@ handle_args() {
       script_file="$1"
       shift
       ;;
+    utxos)
+      wallet_id="$1"
+      shift
+      ;;
+    utxos-script)
+      script_file="$1"
+      shift
+      ;;
     create)
       wallet_id="$1"
       shift
@@ -259,6 +307,8 @@ show_help() {
   echo "  address-script SCRIPT_FILE     get the address for a script located at SCRIPT_FILE"
   echo "  balance WALLET_ID              get the balance for the wallet called WALLET_ID"
   echo "  balance-script SCRIPT_FILE     get the balance for a script located at SCRIPT_FILE"
+  echo "  utxos WALLET_ID                get the UTxOs for the wallet called WALLET_ID"
+  echo "  utxos-script SCRIPT_FILE       get the UTxOs for a script located at SCRIPT_FILE"
   echo "  create WALLET_ID               create a wallet called WALLET_ID"
   echo "  remove WALLET_ID               remove the wallet called WALLET_ID"
   echo "  signing-key WALLET_ID          get the signing key for the wallet called WALLET_ID"
