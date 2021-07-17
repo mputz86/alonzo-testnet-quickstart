@@ -18,7 +18,7 @@ lock_funds() {
 
   # ===================================
   # Script utxo selection
-  script_utxo_with_my_datum=$(cardano-wallet balance-script $script_file \
+  script_utxo_with_my_datum=$(cardano-wallet utxos-script $script_file \
     | jq --arg utxo $datum_hash 'to_entries | map(select(.value.data == $utxo))' \
     | jq 'max_by(.value.value.lovelace)')
   echo Script Utxo with My Datum:
@@ -39,7 +39,7 @@ lock_funds() {
 
   # ===================================
   # Wallet utxo selection
-  main_wallet_utxo_sufficient=$(cardano-wallet balance main \
+  main_wallet_utxo_sufficient=$(cardano-wallet utxos main \
     | jq --argjson payment "$required_inflow" 'to_entries | map(select(.value.value.lovelace >= $payment))' \
     | jq 'min_by(.value.value.lovelace)')
   echo Main Wallet: $(cardano-wallet main)
