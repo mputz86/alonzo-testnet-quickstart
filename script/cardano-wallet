@@ -73,7 +73,7 @@ main() {
       amount_lovelace=$(($amount_lovelace_total % 1000000))
       amount_lovelace_formatted=$(printf "%06d" $amount_lovelace)
       utxo_count=$(echo $utxos | jq 'length')
-      utxo_refs=$(echo $utxos | jq -r 'keys | .[] | "  " + .')
+      utxo_refs=$(echo $utxos | jq -r 'to_entries | map({u: .key, vl: .value.value.lovelace, vd: .value.data}) | map("  " + .u[:10] + "..." + .u[-12:] + " " + (.vl|tostring) + (if .vd then " (Datum " + (.vd[:10]) + "..." + .vd[-10:] + ")" else "" end))   | join("\n")')
 
       style_ada=""
       style_reset=""
@@ -81,6 +81,7 @@ main() {
           style_ada="\e[1m"
           style_reset="\e[0m"
       fi
+      echo "Wallet: ${wallet_id}"
       echo -e "${style_ada}${amount_ada_formatted}${style_reset}.${amount_lovelace_formatted} Ada"
       if (( "$utxo_count" > 0 )); then
         echo "${utxo_count} UTxO:"
@@ -101,7 +102,7 @@ main() {
       amount_lovelace=$(($amount_lovelace_total % 1000000))
       amount_lovelace_formatted=$(printf "%06d" $amount_lovelace)
       utxo_count=$(echo $utxos | jq 'length')
-      utxo_refs=$(echo $utxos | jq -r 'keys | .[] | "  " + .')
+      utxo_refs=$(echo $utxos | jq -r 'to_entries | map({u: .key, vl: .value.value.lovelace, vd: .value.data}) | map("  " + .u[:10] + "..." + .u[-12:] + " " + (.vl|tostring) + (if .vd then " (Datum " + (.vd[:10]) + "..." + .vd[-10:] + ")" else "" end))   | join("\n")')
 
       style_ada=""
       style_reset=""
@@ -109,6 +110,7 @@ main() {
           style_ada="\e[1m"
           style_reset="\e[0m"
       fi
+      echo "Script: ${script_file}"
       echo -e "${style_ada}${amount_ada_formatted}${style_reset}.${amount_lovelace_formatted} Ada"
       if (( "$utxo_count" > 0 )); then
         echo "${utxo_count} UTxO:"
