@@ -60,6 +60,8 @@ Available options:
 Operations (default = address):
   address WALLET_ID              get the address for the wallet called WALLET_ID
   address-script SCRIPT_FILE     get the address for a script located at SCRIPT_FILE
+  balance WALLET_ID              get the balance for the wallet called WALLET_ID
+  balance-script SCRIPT_FILE     get the balance for a script located at SCRIPT_FILE
   utxos WALLET_ID                get the UTxOs for the wallet called WALLET_ID
   utxos-script SCRIPT_FILE       get the UTxOs for a script located at SCRIPT_FILE
   create WALLET_ID               create a wallet called WALLET_ID
