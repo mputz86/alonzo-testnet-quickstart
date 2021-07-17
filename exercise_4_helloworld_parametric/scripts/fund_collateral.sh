@@ -22,7 +22,7 @@ fund_collateral() {
 
   # ===================================
   # Wallet utxo selection
-  main_wallet_utxo_sufficient=$(cardano-wallet balance main \
+  main_wallet_utxo_sufficient=$(cardano-wallet utxos main \
     | jq --argjson payment "$required_inflow" 'to_entries | map(select(.value.value.lovelace >= $payment))' \
     | jq 'min_by(.value.value.lovelace)')
   echo Main Wallet: $(cardano-wallet main)

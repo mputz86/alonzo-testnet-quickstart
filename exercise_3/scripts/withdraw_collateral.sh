@@ -25,7 +25,7 @@ withdraw_collateral() {
 
   # ===================================
   # Wallet utxo selection
-  collateral_utxo_sufficient=$(cardano-wallet balance collateral \
+  collateral_utxo_sufficient=$(cardano-wallet utxos collateral \
     | jq --argjson payment "$required_inflow" 'to_entries | map(select(.value.value.lovelace >= $payment))' \
     | jq 'min_by(.value.value.lovelace)')
   echo Collateral Wallet: $(cardano-wallet collateral)
