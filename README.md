@@ -1,5 +1,5 @@
 # Alonzo testnet quickstart
-This repository is intended to help people get started quickly with the Alonzo White testnet. In particular, it contains some fairly robust and convenient scripts that implement some of the testnet exercises.
+This repository is intended to help people get started quickly with the Alonzo Purple testnet. In particular, it contains some fairly robust and convenient scripts that implement some of the testnet exercises.
 
 ## Prerequisites
 This project has been developed/tested on a Linux system, and it requires the following utilities:
